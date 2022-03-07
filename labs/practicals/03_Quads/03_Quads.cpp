@@ -16,6 +16,15 @@ bool load_content() {
       // *********************************
       // Add the position data for two triangles here
 
+		// Triangle 1
+		vec3(-1.0f, 1.0f, 0.0f),
+		vec3(-1.0f, -1.0f, 0.0f),
+		vec3(1.0f, -1.0f, 0.0f),
+
+		// Triangle 2
+		vec3(-1.0f, 1.0f, 0.0f),
+		vec3(1.0f, -1.0f, 0.0f),
+		vec3(1.0f, 1.0f, 0.0f)
 
       // *********************************
   };
