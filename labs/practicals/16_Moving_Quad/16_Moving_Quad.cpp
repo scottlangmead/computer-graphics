@@ -63,6 +63,8 @@ bool render() {
   // *********************************
   // Create translation matrix - use pos vector
 
+	T = translate(mat4(1.0f), pos);	// Use arrow keys to move
+
   // *********************************
   // Create MVP matrix
   auto V = cam.get_view();
