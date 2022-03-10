@@ -18,7 +18,14 @@ bool load_content() {
       // *********************************
       // Add the position data for cube corners here (8 total)
 
-
+		vec3(-1.0f, -1.0f, 1.0f),	// Front-top-left
+		vec3(1.0f, -1.0f, 1.0f),	// Front-top-right
+		vec3(-1.0f, -1.0f, -1.0f),	// Front-bottom-left
+		vec3(1.0f, -1.0f, -1.0f),	// Front-bottom-right
+		vec3(-1.0f, 1.0f, 1.0f),	// Back-top-left
+		vec3(1.0f, 1.0f, 1.0f),		// Back-top-right
+		vec3(-1.0f, 1.0f, -1.0f),	// Back-bottom-left
+		vec3(1.0f, 1.0f, -1.0f)		// Back-bottom-right
 
       // *********************************
   };
@@ -28,20 +35,33 @@ bool load_content() {
     colours.push_back(vec4((i + 1) % 2, 0.0f, i % 2, 1.0f));
   }
   // Create the index buffer
-  vector<GLuint> indices{
+  vector<GLuint> indices {
       // *********************************
       // Add index information here - 3 per triangle, 6 per face, 12 triangles
-      // Front
 
-      // Back
+		// Front
+		1,0,2,	// Tri 1
+		2,3,1,	// Tri 2	
 
-      // Right
+		// Back
+		5,6,4,	// Tri 1
+		5,7,6,	// Tri 2
 
-      // Left
+		// Right
+		1,3,7,	// Tri 1
+		7,5,1,	// Tri 2
 
-      // Top
+		// Left
+		6,2,0,	// Tri 1
+		0,4,6,	// Tri 2
 
-      // Bottom
+		// Top
+		4,0,1,	// Tri 1
+		1,5,4,	// Tri 2
+
+		// Bottom
+		3,2,6,	// Tri 1
+		6,7,3	// Tri 2
 
       // *********************************
   };
