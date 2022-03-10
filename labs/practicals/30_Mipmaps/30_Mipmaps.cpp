@@ -29,9 +29,9 @@ bool load_content() {
   // Create three mesh objects - reuse geometry
   for (auto &m : meshes) {
     // *********************************
-
+	  m = mesh(geom);
     // Scale each mesh by 10
-
+	  m.get_transform().scale *= 10;
     // *********************************
   }
 
@@ -57,7 +57,7 @@ bool load_content() {
                     false);
 
   // Set camera properties
-  cam.set_position(vec3(0, 0, 10.0f));
+  cam.set_position(vec3(0, 0, 75.0f));
   cam.set_target(vec3(0, 0, 1.0f));
   auto aspect = static_cast<float>(renderer::get_screen_width()) / static_cast<float>(renderer::get_screen_height());
   cam.set_projection(quarter_pi<float>(), aspect, 0.0001f, 10000.0f);
@@ -93,11 +93,11 @@ bool render() {
 
     // *********************************
     // Bind correct texture to renderer
-
+		renderer::bind(texs[i], i);
     // Set the texture value for the shader here
-
+		glUniform1i(eff.get_uniform_location("tex"), i);
     // Render the mesh
-
+		renderer::render(meshes[i]);
     // *********************************
   }
 

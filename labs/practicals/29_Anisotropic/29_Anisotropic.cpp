@@ -47,8 +47,10 @@ bool load_content() {
   // 3 - mipmaps, no anisotropic
   // ******************************
 
-
-
+	texs[0] = texture("textures/sign.jpg", false, false);
+	texs[1] = texture("textures/sign.jpg", false, true);
+	texs[2] = texture("textures/sign.jpg", true, false);
+	texs[3] = texture("textures/sign.jpg", true, true);
 
   // *********************************
   // Set camera properties
@@ -62,18 +64,18 @@ bool load_content() {
 
 bool update(float delta_time) {
   // Move camera, notice the slightly altered technique
-  vec3 dir;
+  vec3 dir = vec3(0.0f);
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_UP)) {
-    dir += vec3(0.0f, 10.0f, 0.0f);
+	dir += vec3(0.0f, 10.0f, 0.0f);
   }
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_DOWN)) {
-    dir += vec3(0.0f, -10.0f, 0.0f);
+	dir += vec3(0.0f, -10.0f, 0.0f);
   }
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_LEFT)) {
-    dir += vec3(-10.0f, 0.0f, 0.0f);
+	dir += vec3(-10.0f, 0.0f, 0.0f);
   }
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_RIGHT)) {
-    dir += vec3(10.0f, 0.0f, 0.0f);
+	dir += vec3(10.0f, 0.0f, 0.0f);
   }
   cam.set_position(cam.get_position() + dir * delta_time);
   // Update the camera
@@ -95,10 +97,10 @@ bool render() {
     glUniformMatrix4fv(eff.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
 
     // Bind correct texture to renderer
-    renderer::bind(texs[i], 0);
+    renderer::bind(texs[i], i);
 
     // Set the texture value for the shader here
-    glUniform1i(eff.get_uniform_location("tex"), 0);
+    glUniform1i(eff.get_uniform_location("tex"), i);
 
     // Render the mesh
     renderer::render(meshes[i]);

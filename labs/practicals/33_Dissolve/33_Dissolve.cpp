@@ -45,9 +45,9 @@ bool load_content() {
 bool update(float delta_time) {
   // Use up an down to modify the dissolve factor
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_UP))
-    dissolve_factor = clamp(dissolve_factor + 0.1f * delta_time, 0.0f, 1.0f);
+	dissolve_factor = clamp(dissolve_factor + 0.1f * delta_time, 0.0f, 1.0f);
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_DOWN))
-    dissolve_factor = clamp(dissolve_factor - 0.1f * delta_time, 0.0f, 1.0f);
+	dissolve_factor = clamp(dissolve_factor - 0.1f * delta_time, 0.0f, 1.0f);
   // Update camera
   cam.update(delta_time);
   uv_scroll += vec2(0, delta_time * 0.05);
@@ -65,20 +65,20 @@ bool render() {
   auto MVP = P * V * M;
 
   // Set MVP matrix uniform
-  glUniformMatrix4fv(eff.get_uniform_location("MVP"), // Location of uniform
-                     1,                               // Number of values - 1 mat4
-                     GL_FALSE,                        // Transpose the matrix?
-                     value_ptr(MVP));                 // Pointer to matrix data
+  glUniformMatrix4fv(eff.get_uniform_location("MVP"),	// Location of uniform
+					1,									// Number of values - 1 mat4
+					GL_FALSE,							// Transpose the matrix?
+					value_ptr(MVP));					// Pointer to matrix data
+														// *********************************
+														// Set the dissolve_factor uniform value
 
-  // *********************************
-  // Set the dissolve_factor uniform value
-
+  glUniform1f(eff.get_uniform_location("dissolve_factor"), 0.5);
   // Bind the two textures - use different index for each
-
-
+  renderer::bind(tex, 0);
+  renderer::bind(dissolve, 1);
   // Set the uniform values for textures - use correct index
-
-
+  glUniform1i(eff.get_uniform_location("tex"), 0);
+  glUniform1i(eff.get_uniform_location("dissolve"), 1);
   // *********************************
 
   // Set UV_scroll uniform, adds cool movent (Protip: This is a super easy way to do fire effects;))
