@@ -42,8 +42,7 @@ bool load_content() {
   vector<vec3> positions;
   vector<vec4> colours;
   // Define the initial tetrahedron - 4 points
-  vector<vec3> v{vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.942809f, -0.333333f), vec3(-0.816497f, -0.471405f, -0.333333f),
-                 vec3(0.816497f, -0.471405f, 0.333333f)};
+  vector<vec3> v{vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.942809f, -0.333333f), vec3(-0.816497f, -0.471405f, -0.333333f), vec3(0.816497f, -0.471405f, 0.333333f)};
   // Divide the triangles
   divide_triangle({v[0], v[1], v[2]}, subdivisions, positions, colours);
   divide_triangle({v[3], v[2], v[1]}, subdivisions, positions, colours);

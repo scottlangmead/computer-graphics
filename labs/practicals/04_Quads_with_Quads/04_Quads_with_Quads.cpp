@@ -13,28 +13,26 @@ target_camera cam;
 bool load_content() {
   // *********************************
   // Set geometry type to quads
-	geom.set_type(GL_QUADS);	// GL_QUADS is outdated and produces an error
+  geom.set_type(GL_QUADS);	// GL_QUADS is outdated and produces an error
   // *********************************
   // Create quad data
   // Positions
   vector<vec3> positions{
-      // *********************************
-      // Add the four positions of the quad corners here
-		
-		vec3(-1.0f, 1.0f, 0.0f),
-		vec3(-1.0f, -1.0f, 0.0f),
-		vec3(1.0f, -1.0f, 0.0f),
-		vec3(1.0f, 1.0f, 0.0f)
+  // *********************************
 
-      // *********************************
+	// Add the four positions of the quad corners here
+	vec3(-1.0f, 1.0f, 0.0f),
+	vec3(-1.0f, -1.0f, 0.0f),
+	vec3(1.0f, -1.0f, 0.0f),
+	vec3(1.0f, 1.0f, 0.0f)
+
+  // *********************************
   };
   // Colours
-  vector<vec4> colours{vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f),
-                       vec4(1.0f, 0.0f, 0.0f, 1.0f)};
+  vector<vec4> colours{vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f)};
   // Add to the geometry
   geom.add_buffer(positions, BUFFER_INDEXES::POSITION_BUFFER);
   geom.add_buffer(colours, BUFFER_INDEXES::COLOUR_BUFFER);
- 
 
   // Load in shaders
   eff.add_shader("shaders/basic.vert", // filename

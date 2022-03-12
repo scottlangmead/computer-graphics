@@ -19,23 +19,23 @@ void triangle(const vector<vec3> &points, vector<vec3> &positions, vector<vec4> 
 
 void divide_triangle(const vector<vec3> &points, unsigned int count, vector<vec3> &positions, vector<vec4> &colours) {
   // *********************************
-	// IF we have more divisions to do?
-	if (count > 0)
-	{
-		// Calculate new vertices to work on
-		auto m0 = { vec3(points[0]), vec3((points[0] + points[1]) * 0.5f), vec3((points[2] + points[0]) * 0.5f) };
-		auto m1 = { vec3(points[1]), vec3((points[2] + points[1]) * 0.5f), vec3((points[1] + points[0]) * 0.5f) };
-		auto m2 = { vec3(points[2]), vec3((points[0] + points[2]) * 0.5f), vec3((points[2] + points[1]) * 0.5f) };
+  // IF we have more divisions to do?
+  if (count > 0)
+  {
+	// Calculate new vertices to work on
+	auto m0 = { vec3(points[0]), vec3((points[0] + points[1]) * 0.5f), vec3((points[2] + points[0]) * 0.5f) };
+	auto m1 = { vec3(points[1]), vec3((points[2] + points[1]) * 0.5f), vec3((points[1] + points[0]) * 0.5f) };
+	auto m2 = { vec3(points[2]), vec3((points[0] + points[2]) * 0.5f), vec3((points[2] + points[1]) * 0.5f) };
 
-		// Divide new triangles
-		divide_triangle(m0, count - 1, positions, colours);
-		divide_triangle(m1, count - 1, positions, colours);
-		divide_triangle(m2, count - 1, positions, colours);
-	}
-	else
-	{
-		triangle(points, positions, colours);
-	}
+	// Divide new triangles
+	divide_triangle(m0, count - 1, positions, colours);
+	divide_triangle(m1, count - 1, positions, colours);
+	divide_triangle(m2, count - 1, positions, colours);
+  }
+  else
+  {
+	triangle(points, positions, colours);
+  }
 
   // *********************************
 }

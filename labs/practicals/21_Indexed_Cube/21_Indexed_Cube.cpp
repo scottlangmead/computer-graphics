@@ -15,19 +15,19 @@ bool load_content() {
   // Create cube data - eight corners
   // Positions
   vector<vec3> positions{
-      // *********************************
-      // Add the position data for cube corners here (8 total)
+  // *********************************
+	
+	// Add the position data for cube corners here (8 total)
+	vec3(-1.0f, -1.0f, 1.0f),	// Front-top-left
+	vec3(1.0f, -1.0f, 1.0f),	// Front-top-right
+	vec3(-1.0f, -1.0f, -1.0f),	// Front-bottom-left
+	vec3(1.0f, -1.0f, -1.0f),	// Front-bottom-right
+	vec3(-1.0f, 1.0f, 1.0f),	// Back-top-left
+	vec3(1.0f, 1.0f, 1.0f),		// Back-top-right
+	vec3(-1.0f, 1.0f, -1.0f),	// Back-bottom-left
+	vec3(1.0f, 1.0f, -1.0f)		// Back-bottom-right
 
-		vec3(-1.0f, -1.0f, 1.0f),	// Front-top-left
-		vec3(1.0f, -1.0f, 1.0f),	// Front-top-right
-		vec3(-1.0f, -1.0f, -1.0f),	// Front-bottom-left
-		vec3(1.0f, -1.0f, -1.0f),	// Front-bottom-right
-		vec3(-1.0f, 1.0f, 1.0f),	// Back-top-left
-		vec3(1.0f, 1.0f, 1.0f),		// Back-top-right
-		vec3(-1.0f, 1.0f, -1.0f),	// Back-bottom-left
-		vec3(1.0f, 1.0f, -1.0f)		// Back-bottom-right
-
-      // *********************************
+  // *********************************
   };
   // Colours
   vector<vec4> colours;
@@ -36,34 +36,34 @@ bool load_content() {
   }
   // Create the index buffer
   vector<GLuint> indices {
-      // *********************************
-      // Add index information here - 3 per triangle, 6 per face, 12 triangles
+  // *********************************
+  // Add index information here - 3 per triangle, 6 per face, 12 triangles
 
-		// Front
-		1,0,2,	// Tri 1
-		2,3,1,	// Tri 2	
+  // Front
+  1,0,2,	// Tri 1
+  2,3,1,	// Tri 2	
 
-		// Back
-		5,6,4,	// Tri 1
-		5,7,6,	// Tri 2
+  // Back
+  5,6,4,	// Tri 1
+  5,7,6,	// Tri 2
 
-		// Right
-		1,3,7,	// Tri 1
-		7,5,1,	// Tri 2
+  // Right
+  1,3,7,	// Tri 1
+  7,5,1,	// Tri 2
 
-		// Left
-		6,2,0,	// Tri 1
-		0,4,6,	// Tri 2
+  // Left
+  6,2,0,	// Tri 1
+  0,4,6,	// Tri 2
 
-		// Top
-		4,0,1,	// Tri 1
-		1,5,4,	// Tri 2
+  // Top
+  4,0,1,	// Tri 1
+  1,5,4,	// Tri 2
 
-		// Bottom
-		3,2,6,	// Tri 1
-		6,7,3	// Tri 2
+  // Bottom
+  3,2,6,	// Tri 1
+  6,7,3		// Tri 2
 
-      // *********************************
+  // *********************************
   };
   // Add to the geometry
   geom.add_buffer(positions, BUFFER_INDEXES::POSITION_BUFFER);

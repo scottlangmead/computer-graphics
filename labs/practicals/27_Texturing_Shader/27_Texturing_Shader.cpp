@@ -20,12 +20,12 @@ bool load_content() {
   // *********************************
   // Define texture coordinates for triangle
 
-	vector<vec2> tex_coords
-	{
-		vec2(0.5f, -1.0f),
-		vec2(0.0f, 0.0f),
-		vec2(1.0f, 0.0f)
-	};
+  vector<vec2> tex_coords
+  {
+	vec2(0.5f, -1.0f),
+	vec2(0.0f, 0.0f),
+	vec2(1.0f, 0.0f)
+  };
 
   // *********************************
   // Add to the geometry
@@ -43,9 +43,9 @@ bool load_content() {
   eff.add_shader("27_Texturing_Shader/simple_texture.frag", GL_FRAGMENT_SHADER);
   // *********************************
   // Build effect
-	eff.build();
+  eff.build();
   // Load texture "textures/sign.jpg"
-	tex = texture("textures/sign.jpg");
+  tex = texture("textures/sign.jpg");
   // *********************************
 
   // Set camera properties

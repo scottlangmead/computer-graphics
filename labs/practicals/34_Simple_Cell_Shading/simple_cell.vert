@@ -14,8 +14,8 @@ const vec3 light_dir = vec3(0, 0, 1.0);
 
 void main()
 {
-	// Transform position
-	gl_Position = MVP * vec4(position, 1.0);
-	// Texture coordinate is a scalar based on angle between surface and light
-	tex_coord = clamp(max(0.0, dot(normalize(normal), light_dir)), 0.0, 1.0);
+  // Transform position
+  gl_Position = MVP * vec4(position, 1.0);
+  // Texture coordinate is a scalar based on angle between surface and light
+  tex_coord = clamp(max(0.0, dot(normalize(normal), light_dir)), 0.0, 1.0);
 }

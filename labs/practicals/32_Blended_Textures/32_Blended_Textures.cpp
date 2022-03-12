@@ -19,8 +19,7 @@ bool load_content() {
   geom.set_type(GL_TRIANGLE_STRIP);
 
   // Positions
-  vector<vec3> positions{vec3(-1.0f, -1.0f, 0.0f), vec3(1.0f, -1.0f, 0.0f), vec3(-1.0f, 1.0f, 0.0f),
-                         vec3(1.0f, 1.0f, 0.0f)};
+  vector<vec3> positions{vec3(-1.0f, -1.0f, 0.0f), vec3(1.0f, -1.0f, 0.0f), vec3(-1.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f)};
   // Texture coordinates
   vector<vec2> tex_coords{vec2(0.0f, 0.0f), vec2(2.0f, 0.0f), vec2(0.0f, 2.0f), vec2(2.0f, 2.0f)};
   // Add to the geometry

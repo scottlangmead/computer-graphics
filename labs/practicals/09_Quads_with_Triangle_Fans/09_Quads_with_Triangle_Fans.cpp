@@ -12,25 +12,25 @@ target_camera cam;
 bool load_content() {
   // *********************************
   // Set geometry type to triangle fan
-	geom.set_type(GL_TRIANGLE_FAN);
+  geom.set_type(GL_TRIANGLE_FAN);
   // *********************************
   // Positions
 
-	// Quad
-	vec3 v0 = vec3(-1.0f, 1.0f, 0.0f);	// Top-left
-	vec3 v1 = vec3(-1.0f, -1.0f, 0.0f);	// Bottom-left
-	vec3 v2 = vec3(1.0f, -1.0f, 0.0f);	// Bottom-right
-	vec3 v3 = vec3(1.0f, 1.0f, 0.0f);	// Top-right
+  // Quad
+  vec3 v0 = vec3(-1.0f, 1.0f, 0.0f);	// Top-left
+  vec3 v1 = vec3(-1.0f, -1.0f, 0.0f);	// Bottom-left
+  vec3 v2 = vec3(1.0f, -1.0f, 0.0f);	// Bottom-right
+  vec3 v3 = vec3(1.0f, 1.0f, 0.0f);	// Top-right
 
   vector<vec3> positions{
-      // *********************************
-      // Add the position data for our triangle fan here
-		
-		v0,	// Initial point
-		
-		v1, v2, v3	// Triangle corners
+  // *********************************
 
-      // *********************************
+	// Add the position data for our triangle fan here	
+	v0,	// Initial point
+		
+	v1, v2, v3	// Triangle corners
+
+  // *********************************
   };
   // Colours
   vector<vec4> colours{vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f),

@@ -17,8 +17,7 @@ bool load_content() {
   geometry geom;
   geom.set_type(GL_TRIANGLE_STRIP);
   // Positions
-  vector<vec3> positions{vec3(-1.0f, -1.0f, 0.0f), vec3(1.0f, -1.0f, 0.0f), vec3(-1.0f, 1.0f, 0.0f),
-                         vec3(1.0f, 1.0f, 0.0f)};
+  vector<vec3> positions{vec3(-1.0f, -1.0f, 0.0f), vec3(1.0f, -1.0f, 0.0f), vec3(-1.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f)};
   // Texture coordinates
   vector<vec2> tex_coords{vec2(0.0f, 0.0f), vec2(10.0f, 0.0f), vec2(0.0f, 400.0f), vec2(10.0f, 400.0f)};
   // Add to the geometry
@@ -48,10 +47,10 @@ bool load_content() {
   // 3 - mipmaps, anisotropic
   // ******************************
 
-	texs[0] = texture("textures/checker.png", false, false);
-	texs[1] = texture("textures/checker.png", false, true);
-	texs[2] = texture("textures/checker.png", true, true);
-	texs[3] = texture("textures/checker.png", true, true);
+  texs[0] = texture("textures/checker.png", false, false);
+  texs[1] = texture("textures/checker.png", false, true);
+  texs[2] = texture("textures/checker.png", true, true);
+  texs[3] = texture("textures/checker.png", true, true);
 
   // Set camera properties
   cam.set_position(vec3(10.0f, 2.0f, 200.0f));

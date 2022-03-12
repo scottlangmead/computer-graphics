@@ -18,8 +18,7 @@ bool load_content() {
   geom.set_type(GL_TRIANGLE_STRIP);
   // Create quad data
   // Positions
-  vector<vec3> positions{vec3(-1.0f, -1.0f, 0.0f), vec3(1.0f, -1.0f, 0.0f), vec3(-1.0f, 1.0f, 0.0f),
-                         vec3(1.0f, 1.0f, 0.0f)};
+  vector<vec3> positions{vec3(-1.0f, -1.0f, 0.0f), vec3(1.0f, -1.0f, 0.0f), vec3(-1.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f)};
   // Texture coordinates
   vector<vec2> tex_coords{vec2(0.0f, 0.0f), vec2(10.0f, 0.0f), vec2(0.0f, 10.0f), vec2(10.0f, 10.0f)};
   // Add to the geometry
@@ -29,9 +28,9 @@ bool load_content() {
   // Create three mesh objects - reuse geometry
   for (auto &m : meshes) {
     // *********************************
-	  m = mesh(geom);
+	m = mesh(geom);
     // Scale each mesh by 10
-	  m.get_transform().scale *= 10;
+	m.get_transform().scale *= 10;
     // *********************************
   }
 
@@ -93,11 +92,11 @@ bool render() {
 
     // *********************************
     // Bind correct texture to renderer
-		renderer::bind(texs[i], i);
+	renderer::bind(texs[i], i);
     // Set the texture value for the shader here
-		glUniform1i(eff.get_uniform_location("tex"), i);
+	glUniform1i(eff.get_uniform_location("tex"), i);
     // Render the mesh
-		renderer::render(meshes[i]);
+	renderer::render(meshes[i]);
     // *********************************
   }
 

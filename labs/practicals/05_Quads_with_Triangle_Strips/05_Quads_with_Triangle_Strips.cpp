@@ -12,31 +12,29 @@ target_camera cam;
 bool load_content() {
   // *********************************
   // Set geometry type to triangle strip
-	geom.set_type(GL_TRIANGLE_STRIP);
+  geom.set_type(GL_TRIANGLE_STRIP);
   // *********************************
   // Positions
 
-	// Quad
-	vec3 v0 = vec3(-1.0f, 1.0f, 0.0f);	// Top-left
-	vec3 v1 = vec3(-1.0f, -1.0f, 0.0f);	// Bottom-left
-	vec3 v2 = vec3(1.0f, -1.0f, 0.0f);	// Bottom-right
-	vec3 v3 = vec3(1.0f, 1.0f, 0.0f);	// Top-right
+  // Quad
+  vec3 v0 = vec3(-1.0f, 1.0f, 0.0f);	// Top-left
+  vec3 v1 = vec3(-1.0f, -1.0f, 0.0f);	// Bottom-left
+  vec3 v2 = vec3(1.0f, -1.0f, 0.0f);	// Bottom-right
+  vec3 v3 = vec3(1.0f, 1.0f, 0.0f);	// Top-right
 
   vector<vec3> positions{
-      // *********************************
-      // Add the position data for two triangles here
-		
-		// Triangle 1
-		v1, v2, v0,
+  // *********************************
 
-		// Triangle 2
-		v3	// Uses v2, v0 from previous triangle
+    // Add the position data for two triangles here	
+	// Triangle 1
+	v1, v2, v0,
+	// Triangle 2
+	v3	// Uses v2, v0 from previous triangle
 
-      // *********************************
+  // *********************************
   };
   // Colours
-  vector<vec4> colours{vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f),
-                       vec4(1.0f, 0.0f, 0.0f, 1.0f)};
+  vector<vec4> colours{vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f)};
   // Add to the geometry
   geom.add_buffer(positions, BUFFER_INDEXES::POSITION_BUFFER);
   geom.add_buffer(colours, BUFFER_INDEXES::COLOUR_BUFFER);

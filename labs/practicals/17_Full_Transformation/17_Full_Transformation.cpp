@@ -17,11 +17,9 @@ bool load_content() {
   geom.set_type(GL_TRIANGLE_STRIP);
   // Create quad data
   // Positions
-  vector<vec3> positions{vec3(-1.0f, -1.0f, 0.0f), vec3(1.0f, -1.0f, 0.0f), vec3(-1.0f, 1.0f, 0.0f),
-                         vec3(1.0f, 1.0f, 0.0f)};
+  vector<vec3> positions{vec3(-1.0f, -1.0f, 0.0f), vec3(1.0f, -1.0f, 0.0f), vec3(-1.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f)};
   // Colours
-  vector<vec4> colours{vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f),
-                       vec4(1.0f, 0.0f, 0.0f, 1.0f)};
+  vector<vec4> colours{vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f)};
   // Add to the geometry
   geom.add_buffer(positions, BUFFER_INDEXES::POSITION_BUFFER);
   geom.add_buffer(colours, BUFFER_INDEXES::COLOUR_BUFFER);
@@ -75,13 +73,13 @@ bool render() {
   // Create transformation matrices
   // ******************************
 
-	R = rotate(mat4(1.0f), theta, vec3(1.0f, 1.0f, 1.0f));
+  R = rotate(mat4(1.0f), theta, vec3(1.0f, 1.0f, 1.0f));
 
-	S = scale(mat4(1.0f), vec3(s, s, s));
+  S = scale(mat4(1.0f), vec3(s, s, s));
 
-	T = translate(mat4(1.0f), pos);
+  T = translate(mat4(1.0f), pos);
 
-	M = T * R * S;
+  M = T * R * S;
 
   // Combine matrices to set M - remember multiplication order
 

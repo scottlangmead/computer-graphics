@@ -10,8 +10,8 @@ layout (location = 0) out vec2 tex_coord_out;
 
 void main()
 {
-	// Transform position
-	gl_Position = MVP * vec4(position, 1.0);
-	// Pass through texture coordinate
-	tex_coord_out = tex_coord_in + UV_SCROLL;
+  // Transform position
+  gl_Position = MVP * vec4(position, 1.0);
+  // Pass through texture coordinate
+  tex_coord_out = tex_coord_in + UV_SCROLL;
 }

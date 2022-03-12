@@ -14,11 +14,9 @@ bool load_content() {
   geom.set_type(GL_TRIANGLE_STRIP);
   // Create quad data
   // Positions
-  vector<vec3> positions{vec3(-1.0f, -1.0f, 0.0f), vec3(1.0f, -1.0f, 0.0f), vec3(-1.0f, 1.0f, 0.0f),
-                         vec3(1.0f, 1.0f, 0.0f)};
+  vector<vec3> positions{vec3(-1.0f, -1.0f, 0.0f), vec3(1.0f, -1.0f, 0.0f), vec3(-1.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f)};
   // Colours
-  vector<vec4> colours{vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f),
-                       vec4(1.0f, 0.0f, 0.0f, 1.0f)};
+  vector<vec4> colours{vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f)};
   // Add to the geometry
   geom.add_buffer(positions, BUFFER_INDEXES::POSITION_BUFFER);
   geom.add_buffer(colours, BUFFER_INDEXES::COLOUR_BUFFER);
@@ -63,7 +61,7 @@ bool render() {
   // *********************************
   // Create translation matrix - use pos vector
 
-	T = translate(mat4(1.0f), pos);	// Use arrow keys to move
+  T = translate(mat4(1.0f), pos);	// Use arrow keys to move
 
   // *********************************
   // Create MVP matrix

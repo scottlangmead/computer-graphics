@@ -17,45 +17,46 @@ bool load_content() {
   // Create cube data - twelve triangles triangles
   // Positions
 
-	// Cube corners
-	vec3 v0 = vec3(-1.0f, -1.0f, 1.0f);	// Front-top-left
-	vec3 v1 = vec3(1.0f, -1.0f, 1.0f);	// Front-top-right
-	vec3 v2 = vec3(-1.0f, -1.0f, -1.0f);// Front-bottom-left
-	vec3 v3 = vec3(1.0f, -1.0f, -1.0f);	// Front-bottom-right
-	vec3 v4 = vec3(-1.0f, 1.0f, 1.0f);	// Back-top-left
-	vec3 v5 = vec3(1.0f, 1.0f, 1.0f);	// Back-top-right
-	vec3 v6 = vec3(-1.0f, 1.0f, -1.0f);	// Back-bottom-left
-	vec3 v7 = vec3(1.0f, 1.0f, -1.0f);	// Back-bottom-right
+  // Cube corners
+  vec3 v0 = vec3(-1.0f, -1.0f, 1.0f);	// Front-top-left
+  vec3 v1 = vec3(1.0f, -1.0f, 1.0f);	// Front-top-right
+  vec3 v2 = vec3(-1.0f, -1.0f, -1.0f);// Front-bottom-left
+  vec3 v3 = vec3(1.0f, -1.0f, -1.0f);	// Front-bottom-right
+  vec3 v4 = vec3(-1.0f, 1.0f, 1.0f);	// Back-top-left
+  vec3 v5 = vec3(1.0f, 1.0f, 1.0f);	// Back-top-right
+  vec3 v6 = vec3(-1.0f, 1.0f, -1.0f);	// Back-bottom-left
+  vec3 v7 = vec3(1.0f, 1.0f, -1.0f);	// Back-bottom-right
 
   vector<vec3> positions{
-      // *********************************
-      // Add the position data for triangles here, (6 verts per side)
+  // *********************************
 
-	  // Front
-	  v1, v0, v2,	// Tri 1
-	  v2, v3, v1,	// Tri 2
+	// Add the position data for triangles here, (6 verts per side)
 
-	  // Back
-	  v5, v6, v4,	// Tri 1
-	  v5, v7, v6,	// Tri 2
+	// Front
+	v1, v0, v2,	// Tri 1
+	v2, v3, v1,	// Tri 2
 
-	  // Right
-	  v1, v3, v7,	// Tri 1
-	  v7, v5, v1,	// Tri 2
+	// Back
+	v5, v6, v4,	// Tri 1
+	v5, v7, v6,	// Tri 2
 
-	  // Left
-	  v6, v2, v0,	// Tri 1
-	  v0, v4, v6,	// Tri 2
+	// Right
+	v1, v3, v7,	// Tri 1
+	v7, v5, v1,	// Tri 2
 
-	  // Top
-	  v4, v0, v1,	// Tri 1
-	  v1, v5, v4,	// Tri 2
+	// Left
+	v6, v2, v0,	// Tri 1
+	v0, v4, v6,	// Tri 2
 
-	  // Bottom
-	  v3, v2, v6,	// Tri 1
-	  v6, v7, v3	// Tri 2
+	// Top
+	v4, v0, v1,	// Tri 1
+	v1, v5, v4,	// Tri 2
 
-      // *********************************
+	// Bottom
+	v3, v2, v6,	// Tri 1
+	v6, v7, v3	// Tri 2
+
+  // *********************************
   };
   // Colours
   vector<vec4> colours;
@@ -86,52 +87,52 @@ bool update(float delta_time) {
 
   // WSAD - movement
 
-	// Inwards
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_W)) {
-		pos += vec3(0.0f, 0.0f, -5.0f) * delta_time;
-	}
-	// Outwards
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_S)) {
-		pos += vec3(0.0f, 0.0f, 5.0f) * delta_time;
-	}
-	// Left
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_A)) {
-		pos += vec3(-5.0f, 0.0f, 0.0f) * delta_time;
-	}
-	// Right
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_D)) {
-		pos += vec3(5.0f, 0.0f, 0.0f) * delta_time;
-	}
+  // Inwards
+  if (glfwGetKey(renderer::get_window(), GLFW_KEY_W)) {
+	pos += vec3(0.0f, 0.0f, -5.0f) * delta_time;
+  }
+  // Outwards
+  if (glfwGetKey(renderer::get_window(), GLFW_KEY_S)) {
+	pos += vec3(0.0f, 0.0f, 5.0f) * delta_time;
+  }
+  // Left
+  if (glfwGetKey(renderer::get_window(), GLFW_KEY_A)) {
+	pos += vec3(-5.0f, 0.0f, 0.0f) * delta_time;
+  }
+  // Right
+  if (glfwGetKey(renderer::get_window(), GLFW_KEY_D)) {
+	pos += vec3(5.0f, 0.0f, 0.0f) * delta_time;
+  }
 
   // Arrow Keys - rotation
 
-	// Up
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_UP)) {
-		theta -= pi<float>() * delta_time;
-	}
-	// Down
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_DOWN)) {
-		theta += pi<float>() * delta_time;
-	}
-	// Left
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_LEFT)) {
-		rho -= pi<float>() * delta_time;
-	}
-	// Right
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_RIGHT)) {
-		rho += pi<float>() * delta_time;
-	}
+  // Up
+  if (glfwGetKey(renderer::get_window(), GLFW_KEY_UP)) {
+	theta -= pi<float>() * delta_time;
+  }
+  // Down
+  if (glfwGetKey(renderer::get_window(), GLFW_KEY_DOWN)) {
+	theta += pi<float>() * delta_time;
+  }
+  // Left
+  if (glfwGetKey(renderer::get_window(), GLFW_KEY_LEFT)) {
+	rho -= pi<float>() * delta_time;
+  }
+  // Right
+  if (glfwGetKey(renderer::get_window(), GLFW_KEY_RIGHT)) {
+	rho += pi<float>() * delta_time;
+  }
 
   // O decrease scale, P increase scale
 
-	// Scale up
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_O)) {
-		s += 1.0f * delta_time;
-	}
-	// Scale down
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_P)) {
-		s -= 1.0f * delta_time;
-	}
+  // Scale up
+  if (glfwGetKey(renderer::get_window(), GLFW_KEY_O)) {
+	s += 1.0f * delta_time;
+  }
+  // Scale down
+  if (glfwGetKey(renderer::get_window(), GLFW_KEY_P)) {
+	s -= 1.0f * delta_time;
+  }
 
   // *********************************
   // Update the camera
@@ -146,13 +147,13 @@ bool render() {
   // *********************************
   // Create transformation matrix
 
-	R = eulerAngleXZ(theta, rho);
+  R = eulerAngleXZ(theta, rho);
 
-	S = scale(mat4(1.0f), vec3(s, s, s));
+  S = scale(mat4(1.0f), vec3(s, s, s));
 
-	T = translate(mat4(1.0f), pos);
+  T = translate(mat4(1.0f), pos);
 
-	M = T * R * S;
+  M = T * R * S;
 
   // *********************************
   // Create MVP matrix
