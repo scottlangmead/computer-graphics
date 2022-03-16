@@ -5,9 +5,10 @@ using namespace std;
 using namespace graphics_framework;
 using namespace glm;
 
+geometry geom;
 map<string, mesh> meshes;
 effect eff;
-texture tex;
+array<texture, 4> texs;
 free_camera cam;
 
 // Cursor position
@@ -23,12 +24,126 @@ bool initialise()
   return true;
 }
 
+/*
+The following bitmap reading code has been created with the help of "Designed by Hugo"'s tutorial,
+https://www.youtube.com/watch?v=NcEE5xmpgQ0
+*/
+
+// Represents the colour of pixels
+struct Color {
+  float r, g, b;
+
+  Color();	// Default constructor
+  Color(float r, float g, float b);	// Constructor
+};
+// Represents bitmap image
+class Image
+{
+public:
+  Image(int width, int height);	// Constructor
+  void create_terrain_geometry(const char* path);	// Creates terrain 
+
+private:
+  int m_width;
+  int m_height;
+  vector<Color> m_colors;
+};
+// Costructors
+Image::Image(int width, int height) : m_width(width), m_height(height), m_colors(vector<Color>(width * height)) {}
+Color::Color() : r(0), g(0), b(0) {}	// Default constructor
+Color::Color(float r, float g, float b) : r(0), g(0), b(0) {}
+
+// Creates uneven terrain, with a mound in the centre
+void Image::create_terrain_geometry(const char* path)
+{
+  // Open bitmap file
+  ifstream f;
+  f.open(path, ios::out | ios::binary);
+
+  // Header sizes
+  const int fileHeaderSize = 14;
+  const int informationHeaderSize = 40;
+	
+  // File Header
+  unsigned char fileHeader[fileHeaderSize];
+  f.read(reinterpret_cast<char*>(fileHeader), fileHeaderSize);
+
+  // Information Header
+  unsigned char informationHeader[informationHeaderSize];
+  f.read(reinterpret_cast<char*>(informationHeader), informationHeaderSize);
+
+  // File size
+  int fileSize = fileHeader[2] + (fileHeader[3] << 8) + (fileHeader[4] << 16) + (fileHeader[5] << 24);
+  m_width = informationHeader[4] + (informationHeader[5] << 8) + (informationHeader[6] << 16) + (informationHeader[7] << 24);
+  m_height = informationHeader[8] + (informationHeader[9] << 8) + (informationHeader[10] << 16) + (informationHeader[11] << 24);
+
+  // Resize colors vector to match actual width and height of bitmap
+  m_colors.resize(m_width * m_height);
+
+  // Calculate padding bytes
+  const int paddingAmount = ((4 - (m_width * 3) % 4) % 4);
+
+  // 2D array to hold terrain heights
+  float heights[128][128];
+
+  // Loop through each pixel
+  for (int y = 0; y < m_height; y++)
+  {
+	for (int x = 0; x < m_width; x++)
+	{
+	  // Read colour values
+	  unsigned char color[3];
+	  f.read(reinterpret_cast<char*>(color), 3);
+
+	  // Calculate and store rgb values
+	  m_colors[y * m_width + x].r = static_cast<float>(color[2]) / 255.0f;
+	  m_colors[y * m_width + x].g = static_cast<float>(color[1]) / 255.0f;
+	  m_colors[y * m_width + x].b = static_cast<float>(color[0]) / 255.0f;
+
+	  // Add height value to array based on rgb value
+	  heights[x][y] = (m_colors[y * m_width + x].r + m_colors[y * m_width + x].g + m_colors[y * m_width + x].b) / 3;
+	}
+	// Ignore padding
+	f.ignore(paddingAmount);
+  }
+
+  // Close bitmap file
+  f.close();
+
+  // Adding geometry
+
+  // Holds all triangle data
+  vector<vec3> terrain{};
+
+  for (int x = 0; x < 127; x++)		// Loop through tiles on x-axis
+	for (int z = 0; z < 127; z++)	// Loop through tiles on z-axis
+	{
+	  // Triangle 1
+	  terrain.push_back(vec3(float(x),		(heights[x][z] * 10),			float(z)));
+	  terrain.push_back(vec3(float(x),		(heights[x][z + 1] * 10),		float(z + 1)));
+	  terrain.push_back(vec3(float(x + 1),	(heights[x + 1][z + 1] * 10),	float(z + 1)));
+	  // Triangle 2
+	  terrain.push_back(vec3(float(x),		(heights[x][z] * 10),			float(z)));
+	  terrain.push_back(vec3(float(x + 1),	(heights[x + 1][z + 1] * 10),	float(z + 1)));
+	  terrain.push_back(vec3(float(x + 1),	(heights[x + 1][z] * 10),		float(z)));
+	}
+
+  // Colours
+  vector<vec4> colours{ vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f) };
+  // Add to the geometry
+  geom.add_buffer(terrain, BUFFER_INDEXES::POSITION_BUFFER);
+  geom.add_buffer(colours, BUFFER_INDEXES::COLOUR_BUFFER);
+}
+
 bool load_content()
 {
-  // Create plane mesh
-  meshes["plane"] = mesh(geometry_builder::create_plane());
-
-  // Create scene
+  //// Scene meshes
+  // Castle gate
+  meshes["gate_pillar1"] = mesh(geometry_builder::create_box(vec3(2.0f, 6.0f, 2.0f)));
+  meshes["gate_pillar2"] = mesh(geometry_builder::create_box(vec3(2.0f, 6.0f, 2.0f)));
+  meshes["gate_pillar_connection_top"] = mesh(geometry_builder::create_box(vec3(6.0f, 1.0f, 2.0f)));
+  meshes["tower_close_left"] = mesh(geometry_builder::create_cylinder(20, 20));
+  // Sample
   meshes["box"] = mesh(geometry_builder::create_box());
   meshes["tetra"] = mesh(geometry_builder::create_tetrahedron());
   meshes["pyramid"] = mesh(geometry_builder::create_pyramid());
@@ -36,8 +151,19 @@ bool load_content()
   meshes["cylinder"] = mesh(geometry_builder::create_cylinder(20, 20));
   meshes["sphere"] = mesh(geometry_builder::create_sphere(20, 20));
   meshes["torus"] = mesh(geometry_builder::create_torus(20, 20, 1.0f, 5.0f));
+  // Terrain creation via heightmap
+  Image copy(0, 0);
+  copy.create_terrain_geometry("res/textures/heightmap.bmp");
+  meshes["terrain"] = mesh(geom);
 
-  // Transform objects
+  //// Mesh transformations
+  // Castle gate
+  meshes["gate_pillar1"].get_transform().translate(vec3(-4.0f, 3.0f, 0.0f));
+  meshes["gate_pillar2"].get_transform().translate(vec3(4.0f, 3.0f, 0.0f));
+  meshes["gate_pillar_connection_top"].get_transform().translate(vec3(0.0f, 5.5f, 0.0f));
+  meshes["tower_close_left"].get_transform().scale = vec3(25.0f, 50.0f, 25.0f);
+  meshes["tower_close_left"].get_transform().translate(vec3(50.0f, 25.0f, 0.0f));
+  // Sample
   meshes["box"].get_transform().scale = vec3(5.0f, 5.0f, 5.0f);
   meshes["box"].get_transform().translate(vec3(-10.0f, 2.5f, -30.0f));
   meshes["tetra"].get_transform().scale = vec3(4.0f, 4.0f, 4.0f);
@@ -54,8 +180,11 @@ bool load_content()
   meshes["torus"].get_transform().translate(vec3(-25.0f, 10.0f, -25.0f));
   meshes["torus"].get_transform().rotate(vec3(half_pi<float>(), 0.0f, 0.0f));
 
-  // Load texture
-  tex = texture("res/textures/check_1.png");
+  // Load textures
+  texs[0] = texture("res/textures/check_1.png");
+  texs[1] = texture("res/textures/check_2.png");
+  texs[2] = texture("res/textures/check_3.png");
+  texs[3] = texture("res/textures/check_4.png");
 
   // Load in shaders
   eff.add_shader("res/shaders/simple_texture.vert", GL_VERTEX_SHADER);
@@ -130,7 +259,7 @@ bool render()
 	glUniformMatrix4fv(eff.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
 
 	// Bind and set texture
-	renderer::bind(tex, 0);
+	renderer::bind(texs[0], 0);
 	glUniform1i(eff.get_uniform_location("tex"), 0);
 
 	// Render mesh
