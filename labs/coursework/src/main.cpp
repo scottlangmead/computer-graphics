@@ -9,12 +9,17 @@ using namespace glm;
 geometry geom;
 // Mesh map
 map<string, mesh> meshes;
+// Transformation hierarchy
+map<mesh*, mesh*> hierarchy;
 // Cameras
 free_camera cam;
 // Textures array
-array<texture, 2> texs;
+array<texture, 3> texs;
 // Effects array
-array<effect, 2> effs;
+array<effect, 3> effs;
+// Skybox
+mesh skybox;
+cubemap skybox_cubemap;
 
 // Cursor position
 double cursor_x = 0.0;
@@ -149,33 +154,81 @@ void Image::create_terrain_geometry(const char* path)
   geom.add_buffer(tex_coords, BUFFER_INDEXES::TEXTURE_COORDS_0);
 }
 
+void load_skybox() {
+	// Create box geometry for skybox 
+	skybox = mesh(geometry_builder::create_box());
+	// Scale box by 100
+	skybox.get_transform().scale *= 100.0f;
+	
+}
+
 bool load_content()
 {
   //// Scene meshes
   // Terrain
   Image copy(0, 0);
-  copy.create_terrain_geometry("res/textures/heightmap.bmp");
+  copy.create_terrain_geometry("res/textures/terrain/heightmap.bmp");
   meshes["terrain"] = mesh(geom);
+  meshes["rock_1"] = mesh(geometry("res/models/rock_a.obj"));
+  meshes["rock_2"] = mesh(geometry("res/models/rock_d.obj"));
+  meshes["rock_3"] = mesh(geometry("res/models/rock_c.obj"));
+  meshes["rock_4"] = mesh(geometry("res/models/rock_b.obj"));
+  meshes["rock_5"] = mesh(geometry("res/models/rock_a.obj"));
+  meshes["rock_6"] = mesh(geometry("res/models/rock_b.obj"));
+  // Skybox
+  skybox = mesh(geometry_builder::create_box());
+
+  //// Transformations
+  // Terrain
+  meshes["terrain"].get_transform().scale = vec3(2.0f, 2.0f, 2.0f);
+  hierarchy[&meshes["rock_1"]] = &meshes["terrain"];	// Transform hierarchy
+  meshes["rock_1"].get_transform().position = vec3(10.0f, -58.5f, 23.0f);
+  meshes["rock_1"].get_transform().scale = vec3(6.0f, 5.0f, 6.0f);
+  hierarchy[&meshes["rock_2"]] = &meshes["terrain"];	// Transform hierarchy
+  meshes["rock_2"].get_transform().position = vec3(60.0f, -38.5f, 75.0f);
+  meshes["rock_2"].get_transform().scale = vec3(4.0f, 4.0f, 4.0f);
+  hierarchy[&meshes["rock_3"]] = &meshes["terrain"];	// Transform hierarchy
+  meshes["rock_3"].get_transform().position = vec3(18.5f, -100.0f, 120.0f);
+  meshes["rock_3"].get_transform().scale = vec3(8.0f, 6.0f, 8.0f);
+  meshes["rock_3"].get_transform().orientation = vec3((quarter_pi<float>() * 3), (pi<float>() * 0.5), (pi<float>() * 0.5));
+  hierarchy[&meshes["rock_4"]] = &meshes["terrain"];	// Transform hierarchy
+  meshes["rock_4"].get_transform().position = vec3(92.0f, -68.0f, 35.0f);
+  meshes["rock_4"].get_transform().scale = vec3(5.5f, 6.0f, 10.0f);
+  hierarchy[&meshes["rock_5"]] = &meshes["terrain"];	// Transform hierarchy
+  meshes["rock_5"].get_transform().position = vec3(45.0f, -37.0f, 103.5f);
+  meshes["rock_5"].get_transform().scale = vec3(6.0f, 3.5f, 4.0f);
+  hierarchy[&meshes["rock_6"]] = &meshes["terrain"];	// Transform hierarchy
+  meshes["rock_6"].get_transform().position = vec3(50.0f, -43.5f, 20.0f);
+  meshes["rock_6"].get_transform().scale = vec3(8.0f, 4.0f, 5.5f);
 
   //// Load textures
-  texs[0] = texture("res/textures/mud.jpg");
-  texs[1] = texture("res/textures/grass.jpg");
+  texs[0] = texture("res/textures/terrain/mud.jpg");
+  texs[1] = texture("res/textures/terrain/grass.jpg");
+  texs[2] = texture("res/textures/terrain/rock.jpg");
+
+  //// Load skybox cubemap
+  skybox_cubemap = cubemap({"res/textures/skybox/skybox_ft.jpg", "res/textures/skybox/skybox_bk.jpg", "res/textures/skybox/skybox_up.jpg",
+							"res/textures/skybox/skybox_dn.jpg", "res/textures/skybox/skybox_rt.jpg", "res/textures/skybox/skybox_lf.jpg" });
 
   //// Load in shaders
   // Terrain
   effs[0].add_shader("res/shaders/terrain.vert", GL_VERTEX_SHADER);
   effs[0].add_shader("res/shaders/terrain.frag", GL_FRAGMENT_SHADER);
   // Basic
-  effs[1].add_shader("res/shaders/simple_texture.vert", GL_VERTEX_SHADER);
-  effs[1].add_shader("res/shaders/simple_texture.frag", GL_FRAGMENT_SHADER);
+  effs[1].add_shader("res/shaders/main.vert", GL_VERTEX_SHADER);
+  effs[1].add_shader("res/shaders/main.frag", GL_FRAGMENT_SHADER);
+  // Skybox
+  effs[2].add_shader("res/shaders/skybox.vert", GL_VERTEX_SHADER);
+  effs[2].add_shader("res/shaders/skybox.frag", GL_FRAGMENT_SHADER);
 
-  // Build effect
+  // Build effects
   effs[0].build();
   effs[1].build();
+  effs[2].build();
 
   // Set camera properties
-  cam.set_position(vec3(0.0f, 10.0f, 0.0f));
-  cam.set_target(vec3(0.0f, 0.0f, 0.0f));
+  cam.set_position(vec3(100.0f, 40.0f, 5.0f));
+  cam.rotate(pi<float>(), -0.2f);
   cam.set_projection(quarter_pi<float>(), renderer::get_screen_aspect(), 0.1f, 1000.0f);
   return true;
 }
@@ -205,13 +258,13 @@ bool update(float delta_time)
 
   // Use keyboard to move the camera - WSAD
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_W))
-	cam.move(vec3(0.0f, 0.0f, 0.1f));
+	cam.move(vec3(0.0f, 0.0f, 0.3f));
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_S))
-	cam.move(vec3(0.0f, 0.0f, -0.1f));
+	cam.move(vec3(0.0f, 0.0f, -0.3f));
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_A))
-	cam.move(vec3(-0.1f, 0.0f, 0.0f));
+	cam.move(vec3(-0.3f, 0.0f, 0.0f));
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_D))
-	cam.move(vec3(0.1f, 0.0f, 0.0f));
+	cam.move(vec3(0.3f, 0.0f, 0.0f));
 
   // Update the camera
   cam.update(delta_time);
@@ -220,40 +273,101 @@ bool update(float delta_time)
   cursor_x = current_x;
   cursor_y = current_y;
 
+  skybox.get_transform().position = cam.get_position();
+
   return true;
 }
 
-//int counter = 0;
+void render_skybox()
+{
+  // Disable depth test,depth mask,face culling
+  glDisable(GL_DEPTH_TEST);
+  glDepthMask(GL_FALSE);
+  glDisable(GL_CULL_FACE);
+
+  // Bind skybox effect
+  renderer::bind(effs[2]);
+
+  // Calculate MVP for the skybox
+  auto M = skybox.get_transform().get_transform_matrix();
+  auto V = cam.get_view();
+  auto P = cam.get_projection();
+  auto MVP = P * V * M;
+
+  // Set MVP matrix uniform
+  glUniformMatrix4fv(effs[2].get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
+
+  // Set cubemap uniform
+  renderer::bind(skybox_cubemap, 0);
+  glUniform1i(effs[2].get_uniform_location("cubemap"), 0);
+
+  // Render skybox
+  renderer::render(skybox);
+
+  // Enable depth test,depth mask,face culling
+  glEnable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
+  glEnable(GL_CULL_FACE);
+}
 
 bool render()
 {
+  // Render skybox
+  render_skybox();
+
   // Render meshes
   for (auto &e : meshes) {
 	auto m = e.second;
 	
 	// Create MVP matrix
-	auto M = m.get_transform().get_transform_matrix();
+	mat4 M;
+
+	// If rendering a rock (part of transform hierarchy)
+	if (e.first.substr(0, 4) == "rock")
+	  M = (*hierarchy[&e.second]).get_transform().get_transform_matrix() * m.get_transform().get_transform_matrix();
+	else
+	  M = m.get_transform().get_transform_matrix();
+
 	auto V = cam.get_view();
 	auto P = cam.get_projection();
 	auto MVP = P * V * M;
 
-	// Bind effect
-	renderer::bind(effs[0]);
-	// Set MVP matrix uniform
-	glUniformMatrix4fv(effs[0].get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
+	// If rendering the terrain
+	if (e.first == "terrain")
+	{
+	  // Bind effect
+	  renderer::bind(effs[0]);
+	  // Set MVP matrix uniform
+	  glUniformMatrix4fv(effs[0].get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
 
-	// Bind textures
-	renderer::bind(texs[0], 0);
-	renderer::bind(texs[1], 1);
+	  // Bind textures
+	  renderer::bind(texs[0], 0);
+	  renderer::bind(texs[1], 1);
 
-	// Set the uniform values for textures
-	static int tex_indices[] = { 0, 1 };
-	glUniform1iv(effs[0].get_uniform_location("tex"), 2, tex_indices);
+	  // Set the uniform values for textures
+	  static int tex_indices[] = { 0, 1 };
+	  glUniform1iv(effs[0].get_uniform_location("tex"), 2, tex_indices);
 
-	// Render mesh
-	renderer::render(m);
+	  // Render mesh
+	  renderer::render(m);
+	}
+	// If rendering a regular mesh
+	else
+	{
+	  // Bind effect
+	  renderer::bind(effs[1]);
+	  // Set MVP matrix uniform
+	  glUniformMatrix4fv(effs[1].get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
+
+	  // Bind texture to renderer
+	  renderer::bind(texs[2], 0);
+	  // Set the texture value for the shader here
+	  glUniform1i(effs[1].get_uniform_location("tex"), 0);
+
+	  // Render mesh
+	  renderer::render(m);
+	}
   }
-
   return true;
 }
 
