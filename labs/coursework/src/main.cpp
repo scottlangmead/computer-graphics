@@ -5,11 +5,16 @@ using namespace std;
 using namespace graphics_framework;
 using namespace glm;
 
+// Geometry
 geometry geom;
+// Mesh map
 map<string, mesh> meshes;
-effect eff;
-array<texture, 4> texs;
+// Cameras
 free_camera cam;
+// Textures array
+array<texture, 2> texs;
+// Effects array
+array<effect, 2> effs;
 
 // Cursor position
 double cursor_x = 0.0;
@@ -110,88 +115,63 @@ void Image::create_terrain_geometry(const char* path)
   // Close bitmap file
   f.close();
 
-  // Adding geometry
-
-  // Holds all triangle data
+  // Holds triangle data that makes up the terrain
   vector<vec3> terrain{};
+
+  // Holds texture coordinate data for the terrain
+  vector<vec2> tex_coords;
 
   for (int x = 0; x < 127; x++)		// Loop through tiles on x-axis
 	for (int z = 0; z < 127; z++)	// Loop through tiles on z-axis
 	{
-	  // Triangle 1
-	  terrain.push_back(vec3(float(x),		(heights[x][z] * 10),			float(z)));
-	  terrain.push_back(vec3(float(x),		(heights[x][z + 1] * 10),		float(z + 1)));
-	  terrain.push_back(vec3(float(x + 1),	(heights[x + 1][z + 1] * 10),	float(z + 1)));
-	  // Triangle 2
-	  terrain.push_back(vec3(float(x),		(heights[x][z] * 10),			float(z)));
-	  terrain.push_back(vec3(float(x + 1),	(heights[x + 1][z + 1] * 10),	float(z + 1)));
-	  terrain.push_back(vec3(float(x + 1),	(heights[x + 1][z] * 10),		float(z)));
+	  //// Triangle 1
+	  // Terrain geometry
+	  terrain.push_back(vec3(float(x),		(heights[x][z] * 30),			float(z)));
+	  terrain.push_back(vec3(float(x),		(heights[x][z + 1] * 30),		float(z + 1)));
+	  terrain.push_back(vec3(float(x + 1),	(heights[x + 1][z + 1] * 30),	float(z + 1)));
+	  // Terrain texture
+	  tex_coords.push_back(vec2(float(x * 0.1f),		float(z * 0.1f)));
+	  tex_coords.push_back(vec2(float(x * 0.1f),		float((z + 1) * 0.1f)));
+	  tex_coords.push_back(vec2(float((x + 1) * 0.1f),	float((z + 1) * 0.1f)));
+	  //// Triangle 2
+	  // Terrain geometry
+	  terrain.push_back(vec3(float(x),		(heights[x][z] * 30),			float(z)));
+	  terrain.push_back(vec3(float(x + 1),	(heights[x + 1][z + 1] * 30),	float(z + 1)));
+	  terrain.push_back(vec3(float(x + 1),	(heights[x + 1][z] * 30),		float(z)));
+	  // Terrain texture
+	  tex_coords.push_back(vec2(float(x * 0.1f),		float(z * 0.1f)));
+	  tex_coords.push_back(vec2(float((x + 1) * 0.1f),	float((z + 1) * 0.1f)));
+	  tex_coords.push_back(vec2(float((x + 1) * 0.1f),	float(z * 0.1f)));
 	}
-
-  // Colours
-  vector<vec4> colours{ vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f) };
-  // Add to the geometry
+  // Add to the geometry buffer
   geom.add_buffer(terrain, BUFFER_INDEXES::POSITION_BUFFER);
-  geom.add_buffer(colours, BUFFER_INDEXES::COLOUR_BUFFER);
+  // Add textures to the buffer
+  geom.add_buffer(tex_coords, BUFFER_INDEXES::TEXTURE_COORDS_0);
 }
 
 bool load_content()
 {
   //// Scene meshes
-  // Castle gate
-  meshes["gate_pillar1"] = mesh(geometry_builder::create_box(vec3(2.0f, 6.0f, 2.0f)));
-  meshes["gate_pillar2"] = mesh(geometry_builder::create_box(vec3(2.0f, 6.0f, 2.0f)));
-  meshes["gate_pillar_connection_top"] = mesh(geometry_builder::create_box(vec3(6.0f, 1.0f, 2.0f)));
-  meshes["tower_close_left"] = mesh(geometry_builder::create_cylinder(20, 20));
-  // Sample
-  meshes["box"] = mesh(geometry_builder::create_box());
-  meshes["tetra"] = mesh(geometry_builder::create_tetrahedron());
-  meshes["pyramid"] = mesh(geometry_builder::create_pyramid());
-  meshes["disk"] = mesh(geometry_builder::create_disk(20));
-  meshes["cylinder"] = mesh(geometry_builder::create_cylinder(20, 20));
-  meshes["sphere"] = mesh(geometry_builder::create_sphere(20, 20));
-  meshes["torus"] = mesh(geometry_builder::create_torus(20, 20, 1.0f, 5.0f));
-  // Terrain creation via heightmap
+  // Terrain
   Image copy(0, 0);
   copy.create_terrain_geometry("res/textures/heightmap.bmp");
   meshes["terrain"] = mesh(geom);
 
-  //// Mesh transformations
-  // Castle gate
-  meshes["gate_pillar1"].get_transform().translate(vec3(-4.0f, 3.0f, 0.0f));
-  meshes["gate_pillar2"].get_transform().translate(vec3(4.0f, 3.0f, 0.0f));
-  meshes["gate_pillar_connection_top"].get_transform().translate(vec3(0.0f, 5.5f, 0.0f));
-  meshes["tower_close_left"].get_transform().scale = vec3(25.0f, 50.0f, 25.0f);
-  meshes["tower_close_left"].get_transform().translate(vec3(50.0f, 25.0f, 0.0f));
-  // Sample
-  meshes["box"].get_transform().scale = vec3(5.0f, 5.0f, 5.0f);
-  meshes["box"].get_transform().translate(vec3(-10.0f, 2.5f, -30.0f));
-  meshes["tetra"].get_transform().scale = vec3(4.0f, 4.0f, 4.0f);
-  meshes["tetra"].get_transform().translate(vec3(-30.0f, 10.0f, -10.0f));
-  meshes["pyramid"].get_transform().scale = vec3(5.0f, 5.0f, 5.0f);
-  meshes["pyramid"].get_transform().translate(vec3(-10.0f, 7.5f, -30.0f));
-  meshes["disk"].get_transform().scale = vec3(3.0f, 1.0f, 3.0f);
-  meshes["disk"].get_transform().translate(vec3(-10.0f, 11.5f, -30.0f));
-  meshes["disk"].get_transform().rotate(vec3(half_pi<float>(), 0.0f, 0.0f));
-  meshes["cylinder"].get_transform().scale = vec3(5.0f, 5.0f, 5.0f);
-  meshes["cylinder"].get_transform().translate(vec3(-25.0f, 2.5f, -25.0f));
-  meshes["sphere"].get_transform().scale = vec3(2.5f, 2.5f, 2.5f);
-  meshes["sphere"].get_transform().translate(vec3(-25.0f, 10.0f, -25.0f));
-  meshes["torus"].get_transform().translate(vec3(-25.0f, 10.0f, -25.0f));
-  meshes["torus"].get_transform().rotate(vec3(half_pi<float>(), 0.0f, 0.0f));
+  //// Load textures
+  texs[0] = texture("res/textures/mud.jpg");
+  texs[1] = texture("res/textures/grass.jpg");
 
-  // Load textures
-  texs[0] = texture("res/textures/check_1.png");
-  texs[1] = texture("res/textures/check_2.png");
-  texs[2] = texture("res/textures/check_3.png");
-  texs[3] = texture("res/textures/check_4.png");
-
-  // Load in shaders
-  eff.add_shader("res/shaders/simple_texture.vert", GL_VERTEX_SHADER);
-  eff.add_shader("res/shaders/simple_texture.frag", GL_FRAGMENT_SHADER);
+  //// Load in shaders
+  // Terrain
+  effs[0].add_shader("res/shaders/terrain.vert", GL_VERTEX_SHADER);
+  effs[0].add_shader("res/shaders/terrain.frag", GL_FRAGMENT_SHADER);
+  // Basic
+  effs[1].add_shader("res/shaders/simple_texture.vert", GL_VERTEX_SHADER);
+  effs[1].add_shader("res/shaders/simple_texture.frag", GL_FRAGMENT_SHADER);
 
   // Build effect
-  eff.build();
+  effs[0].build();
+  effs[1].build();
 
   // Set camera properties
   cam.set_position(vec3(0.0f, 10.0f, 0.0f));
@@ -243,24 +223,32 @@ bool update(float delta_time)
   return true;
 }
 
+//int counter = 0;
+
 bool render()
 {
   // Render meshes
   for (auto &e : meshes) {
 	auto m = e.second;
-	// Bind effect
-	renderer::bind(eff);
+	
 	// Create MVP matrix
 	auto M = m.get_transform().get_transform_matrix();
 	auto V = cam.get_view();
 	auto P = cam.get_projection();
 	auto MVP = P * V * M;
-	// Set MVP matrix uniform
-	glUniformMatrix4fv(eff.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
 
-	// Bind and set texture
+	// Bind effect
+	renderer::bind(effs[0]);
+	// Set MVP matrix uniform
+	glUniformMatrix4fv(effs[0].get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
+
+	// Bind textures
 	renderer::bind(texs[0], 0);
-	glUniform1i(eff.get_uniform_location("tex"), 0);
+	renderer::bind(texs[1], 1);
+
+	// Set the uniform values for textures
+	static int tex_indices[] = { 0, 1 };
+	glUniform1iv(effs[0].get_uniform_location("tex"), 2, tex_indices);
 
 	// Render mesh
 	renderer::render(m);
