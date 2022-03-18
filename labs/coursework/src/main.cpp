@@ -7,19 +7,27 @@ using namespace glm;
 
 // Geometry
 geometry geom;
+
 // Mesh maps
 map<string, mesh> meshes;
 map<string, mesh> demo_meshes;
+
 // Transformation hierarchy
 map<mesh*, mesh*> hierarchy;
+
 // Cameras
-free_camera cam_f;
-//target_camera cam_t;
+free_camera cam_f;		// Cam 1
+target_camera cam_t;	// Cam 2
+chase_camera cam_c;		// Cam 3
+target_camera cam_demo;	// Cam 4
+int active_cam;	// Tracks which cam is currently being used
 
 // Textures array
-array<texture, 3> texs;
+array<texture, 4> texs;
+
 // Effects array
 array<effect, 4> effs;
+
 // Skybox
 mesh skybox;
 cubemap skybox_cubemap;
@@ -28,12 +36,17 @@ cubemap skybox_cubemap;
 double cursor_x = 0.0;
 double cursor_y = 0.0;
 
+// Whether viewing demo or not
+bool demo = false;
+
 bool initialise()
 {
   // Set input mode - hide the cursor
   glfwSetInputMode(renderer::get_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   // Capture initial mouse position
   glfwGetCursorPos(renderer::get_window(), &cursor_x, &cursor_y);
+  // Free cam enabled by default
+  active_cam = 0;
   return true;
 }
 
@@ -157,14 +170,6 @@ void Image::create_terrain_geometry(const char* path)
   geom.add_buffer(tex_coords, BUFFER_INDEXES::TEXTURE_COORDS_0);
 }
 
-void load_skybox() {
-	// Create box geometry for skybox 
-	skybox = mesh(geometry_builder::create_box());
-	// Scale box by 100
-	skybox.get_transform().scale *= 100.0f;
-	
-}
-
 bool load_content()
 {
   //// Scene meshes
@@ -180,6 +185,8 @@ bool load_content()
   meshes["rock_6"] = mesh(geometry("res/models/rock_b.obj"));
   // Skybox
   skybox = mesh(geometry_builder::create_box());
+  // Chase cam
+  meshes["chaser"] = mesh(geometry_builder::create_sphere());
 
   // Optional meshes to showcase lighting
   demo_meshes["teapot"] = mesh(geometry("res/models/teapot.obj"));
@@ -219,10 +226,14 @@ bool load_content()
   demo_meshes["sphere"].get_transform().position = vec3(150.0f, 15.0f, 100.0f);
   demo_meshes["sphere"].get_transform().scale = vec3(15.0f, 15.0f, 15.0f);
 
+  meshes["chaser"].get_transform().scale = vec3(3.0f, 3.0f, 3.0f);
+  meshes["chaser"].get_transform().position = vec3(50.0f, 50.0f, 40.0f);
+
   //// Load textures
   texs[0] = texture("res/textures/terrain/mud.jpg");
   texs[1] = texture("res/textures/terrain/grass.jpg");
   texs[2] = texture("res/textures/terrain/rock.jpg");
+  texs[3] = texture("res/textures/snow.jpg");
 
   //// Load skybox cubemap
   skybox_cubemap = cubemap({"res/textures/skybox/skybox_ft.jpg", "res/textures/skybox/skybox_bk.jpg", "res/textures/skybox/skybox_up.jpg",
@@ -248,54 +259,179 @@ bool load_content()
   effs[2].build();	// Skybox
   effs[3].build();	// Combined lighting
 
-  // Set camera properties
+  //// Set camera properties
+  // Free cam
   cam_f.set_position(vec3(100.0f, 40.0f, 5.0f));
   cam_f.rotate(pi<float>(), -0.2f);
   cam_f.set_projection(quarter_pi<float>(), renderer::get_screen_aspect(), 0.1f, 1000.0f);
+  // Main target cam
+  cam_t.set_position(vec3(80.0f, 50.0f, 5.0f));
+  cam_t.set_target(vec3(100.0f, 20.0f, 100.0f));
+  cam_t.set_projection(quarter_pi<float>(), renderer::get_screen_aspect(), 0.1f, 1000.0f);
+  // Chase cam
+  cam_c.set_pos_offset(vec3(20.0f, 15.0f, 20.0f));
+  cam_c.set_springiness(0.5f);
+  cam_c.move(meshes["chaser"].get_transform().position, eulerAngles(meshes["chaser"].get_transform().orientation));
+  cam_c.set_projection(quarter_pi<float>(), renderer::get_screen_aspect(), 0.1f, 1000.0f);
+  // Demo target cam
+  cam_demo.set_position(vec3(0.0f, 25.0f, 50.0f));
+  cam_demo.set_target(demo_meshes["teapot"].get_transform().position);
+  cam_demo.set_projection(quarter_pi<float>(), renderer::get_screen_aspect(), 0.1f, 1000.0f);
+
   return true;
 }
 
 bool update(float delta_time)
 {
-  // The ratio of pixels to rotation
-  static double ratio_width = quarter_pi<float>() / static_cast<float>(renderer::get_screen_width());
-  static double ratio_height = (quarter_pi<float>() * (static_cast<float>(renderer::get_screen_height()) / static_cast<float>(renderer::get_screen_width()))) / static_cast<float>(renderer::get_screen_height());
+  if (glfwGetKey(renderer::get_window(), GLFW_KEY_1) && active_cam != 0)
+  {
+	demo = false;
+	active_cam = 0;
+  }
+  if (glfwGetKey(renderer::get_window(), GLFW_KEY_2) && active_cam != 1)
+  {
+	demo = false;
+	active_cam = 1;
+  }
+  if (glfwGetKey(renderer::get_window(), GLFW_KEY_3) && active_cam != 2)
+  {
+	demo = false;
+	active_cam = 2;
+  }
+  if (glfwGetKey(renderer::get_window(), GLFW_KEY_R) && active_cam != 3)
+  {
+	demo = true;
+	active_cam = 3;
+  }
+	  
 
-  double current_x;
-  double current_y;
+  // If free cam
+  if (active_cam == 0)
+  {
+	// The ratio of pixels to rotation
+	static double ratio_width = quarter_pi<float>() / static_cast<float>(renderer::get_screen_width());
+	static double ratio_height = (quarter_pi<float>() * (static_cast<float>(renderer::get_screen_height()) / static_cast<float>(renderer::get_screen_width()))) / static_cast<float>(renderer::get_screen_height());
 
-  // Get the current cursor position
-  glfwGetCursorPos(renderer::get_window(), &current_x, &current_y);
+	double current_x;
+	double current_y;
 
-  // Calculate delta of cursor positions from last frame
-  double delta_x = current_x - cursor_x;
-  double delta_y = current_y - cursor_y;
+	// Get the current cursor position
+	glfwGetCursorPos(renderer::get_window(), &current_x, &current_y);
 
-  // Multiply deltas by ratios - gets actual change in orientation
-  delta_x = delta_x * ratio_width;
-  delta_y = delta_y * ratio_height;
+	// Calculate delta of cursor positions from last frame
+	double delta_x = current_x - cursor_x;
+	double delta_y = current_y - cursor_y;
 
-  // Rotate cameras by delta
-  cam_f.rotate(delta_x, -delta_y);
+	// Multiply deltas by ratios - gets actual change in orientation
+	delta_x = delta_x * ratio_width;
+	delta_y = delta_y * ratio_height;
 
-  // Use keyboard to move the camera - WSAD
-  if (glfwGetKey(renderer::get_window(), GLFW_KEY_W))
+	// Rotate cameras by delta
+	cam_f.rotate(delta_x, -delta_y);
+
+	// Use keyboard to move the camera - WSAD
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_W))
 	  cam_f.move(vec3(0.0f, 0.0f, 0.3f));
-  if (glfwGetKey(renderer::get_window(), GLFW_KEY_S))
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_S))
 	  cam_f.move(vec3(0.0f, 0.0f, -0.3f));
-  if (glfwGetKey(renderer::get_window(), GLFW_KEY_A))
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_A))
 	  cam_f.move(vec3(-0.3f, 0.0f, 0.0f));
-  if (glfwGetKey(renderer::get_window(), GLFW_KEY_D))
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_D))
 	  cam_f.move(vec3(0.3f, 0.0f, 0.0f));
 
-  // Update the camera
-  cam_f.update(delta_time);
+	// Update the camera
+	cam_f.update(delta_time);
 
-  // Update cursor position
-  cursor_x = current_x;
-  cursor_y = current_y;
+	// Update cursor position
+	cursor_x = current_x;
+	cursor_y = current_y;
 
-  skybox.get_transform().position = cam_f.get_position();
+	// Skybox position
+	skybox.get_transform().position = cam_f.get_position();
+  }
+  // If target cam
+  else if (active_cam == 1)
+  {
+	// Update the camera
+	cam_t.update(delta_time);
+
+	// Skybox position
+	skybox.get_transform().position = cam_t.get_position();
+  }
+  // If chase cam
+  else if (active_cam == 2)
+  {
+	  // The target object
+	  static mesh &target_mesh = meshes["chaser"];
+
+	  // The ratio of pixels to rotation - remember the fov
+	  static const float sh = static_cast<float>(renderer::get_screen_height());
+	  static const float sw = static_cast<float>(renderer::get_screen_height());
+	  static const double ratio_width = quarter_pi<float>() / sw;
+	  static const double ratio_height = (quarter_pi<float>() * (sh / sw)) / sh;
+
+	  double current_x;
+	  double current_y;
+	  // *********************************
+	  // Get the current cursor position
+	  glfwGetCursorPos(renderer::get_window(), &current_x, &current_y);
+
+	  // Calculate delta of cursor positions from last frame
+	  double delta_x = current_x - cursor_x;
+	  double delta_y = current_y - cursor_y;
+
+	  // Multiply deltas by ratios and delta_time - gets actual change in orientation
+	  delta_x = delta_x * ratio_width;
+	  delta_y = delta_y * ratio_height;
+
+	  // Rotate cameras by delta
+	  // x - delta_y
+	  // y - delta_x
+	  // z - 0
+	  cam_c.rotate(vec3(0.0f, delta_x, 0.0f));
+	  //cam_c.rotate(vec3(delta_y, delta_x, 0.0f));
+
+	  // Use keyboard to rotate target_mesh - QE rotate on y-axis
+	  if (glfwGetKey(renderer::get_window(), GLFW_KEY_Q))
+		  target_mesh.get_transform().rotate(vec3(0.0f, 0.05f, 0.0f));
+	  if (glfwGetKey(renderer::get_window(), GLFW_KEY_E))
+		  target_mesh.get_transform().rotate(vec3(0.0f, -0.05f, 0.0f));
+
+	  // Use keyboard to move the target_mesh - WSAD
+	  if (glfwGetKey(renderer::get_window(), GLFW_KEY_W))
+		  target_mesh.get_transform().position += vec3(0.0f, 0.0f, 0.25f);
+	  if (glfwGetKey(renderer::get_window(), GLFW_KEY_S))
+		  target_mesh.get_transform().position += vec3(0.0f, 0.0f, -0.25f);
+	  if (glfwGetKey(renderer::get_window(), GLFW_KEY_A))
+		  target_mesh.get_transform().position += vec3(0.25f, 0.0f, 0.0f);
+	  if (glfwGetKey(renderer::get_window(), GLFW_KEY_D))
+		  target_mesh.get_transform().position += vec3(-0.25f, 0.0f, 0.0f);
+
+	  // Move camera - update target position and rotation
+	  cam_c.move(target_mesh.get_transform().position, eulerAngles(target_mesh.get_transform().orientation));
+
+	  // Update the camera
+	  cam_c.update(delta_time);
+
+	  // Update cursor pos
+	  cursor_x = current_x;
+	  cursor_y = current_y;
+
+	  // Skybox position
+	  skybox.get_transform().position = cam_demo.get_position();
+  }
+  // If target cam (for combined lighting demo)
+  else if (active_cam == 3)
+  {
+	// Update the camera
+	cam_demo.update(delta_time);
+
+	// Skybox position
+	skybox.get_transform().position = cam_demo.get_position();
+  }
+
+  // FPS counter
+  cout << "FPS: " << 1.0f / delta_time << endl;
 
   return true;
 }
@@ -312,8 +448,28 @@ void render_skybox()
 
   // Calculate MVP for the skybox
   auto M = skybox.get_transform().get_transform_matrix();
-  auto V = cam_f.get_view();
-  auto P = cam_f.get_projection();
+  mat4 V;
+  mat4 P;
+  if (active_cam == 0)
+  {
+	V = cam_f.get_view();
+	P = cam_f.get_projection();
+  }
+  else if (active_cam == 1)
+  {
+	V = cam_t.get_view();
+	P = cam_t.get_projection();
+  }
+  else if (active_cam == 2)
+  {
+	V = cam_c.get_view();
+	P = cam_c.get_projection();
+  }
+  else if (active_cam == 3)
+  {
+	V = cam_demo.get_view();
+	P = cam_demo.get_projection();
+  }
   auto MVP = P * V * M;
 
   // Set MVP matrix uniform
@@ -332,45 +488,13 @@ void render_skybox()
   glEnable(GL_CULL_FACE);
 }
 
-void bind_lighting(mesh m, mat4 M)
-{
-  // Bind effect
-  renderer::bind(effs[3]);
-  // Create MVP matrix
-  auto V = cam_f.get_view();
-  auto P = cam_f.get_projection();
-  auto MVP = P * V * M;
-  // Set MVP matrix uniform
-  glUniformMatrix4fv(effs[3].get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
-  // Set M matrix uniform
-  glUniformMatrix4fv(effs[3].get_uniform_location("M"), 1, GL_FALSE, value_ptr(M));
-  // Set N matrix uniform - remember - 3x3 matrix
-  glUniformMatrix3fv(effs[3].get_uniform_location("N"), 1, GL_FALSE, value_ptr(m.get_transform().get_normal_matrix()));
-  // Set ambient intensity - (0.3, 0.3, 0.3, 1.0)
-  glUniform4fv(effs[3].get_uniform_location("ambient_intensity"), 1, value_ptr(vec4(0.3f, 0.3f, 0.3f, 1.0f)));
-  // Set light colour - (1.0, 1.0, 1.0, 1.0)
-  glUniform4fv(effs[3].get_uniform_location("light_colour"), 1, value_ptr(vec4(1, 1, 1, 1)));
-  // Set light direction - (1.0, 1.0, -1.0)
-  glUniform3fv(effs[3].get_uniform_location("light_dir"), 1, value_ptr(vec3(1, 1, -1)));
-  // Set diffuse reflection - all objects red
-  glUniform4fv(effs[3].get_uniform_location("diffuse_reflection"), 1, value_ptr(vec4(1, 0, 0, 1)));
-  // Set specular reflection - white
-  glUniform4fv(effs[3].get_uniform_location("specular_reflection"), 1, value_ptr(vec4(1, 1, 1, 1)));
-  // Set shininess - Use 50.0f
-  glUniform1f(effs[3].get_uniform_location("shininess"), 4.0f);
-  // Set eye position - Get this from active camera
-  glUniform3fv(effs[3].get_uniform_location("eye_pos"), 1, value_ptr(cam_f.get_position()));
-}
-
 bool render()
 {
   // Render skybox
   render_skybox();
 
-
-  if (glfwGetKey(renderer::get_window(), 'R'))
+  if (demo)
   {
-
 	for (auto &e : demo_meshes) {
 	  auto m = e.second;
 
@@ -378,8 +502,29 @@ bool render()
 	  renderer::bind(effs[3]);
 	  // Create MVP matrix
 	  auto M = m.get_transform().get_transform_matrix();
-	  auto V = cam_f.get_view();
-	  auto P = cam_f.get_projection();
+	  mat4 V;
+	  mat4 P;
+
+	  if (active_cam == 0)
+	  {
+		V = cam_f.get_view();
+		P = cam_f.get_projection();
+	  }
+	  else if (active_cam == 1)
+	  {
+		V = cam_t.get_view();
+		P = cam_t.get_projection();
+	  }
+	  else if (active_cam == 2)
+	  {
+		V = cam_c.get_view();
+		P = cam_c.get_projection();
+	  }
+	  else if (active_cam == 3)
+	  {
+		V = cam_demo.get_view();
+		P = cam_demo.get_projection();
+	  }
 	  auto MVP = P * V * M;
 	  // Set MVP matrix uniform
 	  glUniformMatrix4fv(effs[3].get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
@@ -400,7 +545,14 @@ bool render()
 	  // Set shininess - Use 50.0f
 	  glUniform1f(effs[3].get_uniform_location("shininess"), 4.0f);
 	  // Set eye position - Get this from active camera
-	  glUniform3fv(effs[3].get_uniform_location("eye_pos"), 1, value_ptr(cam_f.get_position()));
+	  if (active_cam == 0)
+		glUniform3fv(effs[3].get_uniform_location("eye_pos"), 1, value_ptr(cam_f.get_position()));
+	  else if (active_cam == 1)
+		glUniform3fv(effs[3].get_uniform_location("eye_pos"), 1, value_ptr(cam_t.get_position()));
+	  else if (active_cam == 2)
+		glUniform3fv(effs[3].get_uniform_location("eye_pos"), 1, value_ptr(cam_c.get_position()));
+	  else if (active_cam == 3)
+		glUniform3fv(effs[3].get_uniform_location("eye_pos"), 1, value_ptr(cam_demo.get_position()));
 
 	  // Render mesh
 	  renderer::render(m);
@@ -420,8 +572,28 @@ bool render()
 	  else
 		M = m.get_transform().get_transform_matrix();
 
-	  auto V = cam_f.get_view();
-	  auto P = cam_f.get_projection();
+	  mat4 V;
+	  mat4 P;
+	  if (active_cam == 0)
+	  {
+		V = cam_f.get_view();
+		P = cam_f.get_projection();
+	  }
+	  else if (active_cam == 1)
+	  {
+		V = cam_t.get_view();
+		P = cam_t.get_projection();
+	  }
+	  else if (active_cam == 2)
+	  {
+		V = cam_c.get_view();
+		P = cam_c.get_projection();
+	  }
+	  else if (active_cam == 3)
+	  {
+		V = cam_demo.get_view();
+		P = cam_demo.get_projection();
+	  }
 	  auto MVP = P * V * M;
 
 	  // If rendering the terrain
@@ -449,7 +621,11 @@ bool render()
 		glUniformMatrix4fv(effs[1].get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
 
 		// Bind texture to renderer
-		renderer::bind(texs[2], 0);
+		if (e.first.substr(0, 4) == "rock")
+		  renderer::bind(texs[2], 0);
+		else
+		  renderer::bind(texs[3], 0);
+
 		// Set the texture value for the shader here
 		glUniform1i(effs[1].get_uniform_location("tex"), 0);
 	  }
