@@ -25,7 +25,7 @@ target_camera cam_demo2;
 int active_cam;	// Tracks which cam is currently being used
 
 // Textures array
-array<texture, 4> texs;
+array<texture, 5> texs;
 
 // Effects array
 array<effect, 5> effs;
@@ -190,6 +190,7 @@ bool load_content()
   meshes["rock_4"] = mesh(geometry("res/models/rock_b.obj"));
   meshes["rock_5"] = mesh(geometry("res/models/rock_a.obj"));
   meshes["rock_6"] = mesh(geometry("res/models/rock_b.obj"));
+  meshes["well"] = mesh(geometry("res/models/well.obj"));
   // Skybox
   skybox = mesh(geometry_builder::create_box());
   // Chase cam
@@ -229,6 +230,8 @@ bool load_content()
   hierarchy[&meshes["rock_6"]] = &meshes["terrain"];	// Transform hierarchy
   meshes["rock_6"].get_transform().position = vec3(50.0f, -43.5f, 20.0f);
   meshes["rock_6"].get_transform().scale = vec3(8.0f, 4.0f, 5.5f);
+  meshes["well"].get_transform().scale = vec3(0.2f, 0.2f, 0.2f);
+  meshes["well"].get_transform().position = vec3(100.0f, 20.0f, 110.0f);
 
   demo_meshes["plane"].get_transform().position = vec3(100.0f, 0.0f, 150.0f);
   demo_meshes["plane"].get_transform().scale = vec3(2.0f, 0.0f, 2.0f);
@@ -291,6 +294,7 @@ bool load_content()
   texs[1] = texture("res/textures/terrain/grass.jpg");
   texs[2] = texture("res/textures/terrain/rock.jpg");
   texs[3] = texture("res/textures/checker.png");
+  texs[4] = texture("res/textures/well.tga");
 
   //// Load skybox cubemap
   skybox_cubemap = cubemap({"res/textures/skybox/skybox_ft.jpg", "res/textures/skybox/skybox_bk.jpg", "res/textures/skybox/skybox_up.jpg",
@@ -371,6 +375,7 @@ bool load_content()
 
 bool update(float delta_time)
 {
+  // Camera selection
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_1) && active_cam != 0)
   {
 	demo = false;
@@ -719,8 +724,8 @@ bool render()
 	  }
 	  else if (active_cam == 4)
 	  {
-		  V = cam_demo2.get_view();
-		  P = cam_demo2.get_projection();
+		V = cam_demo2.get_view();
+		P = cam_demo2.get_projection();
 	  }
 	  auto MVP = P * V * M;
 	  // If rendering the terrain
@@ -750,6 +755,9 @@ bool render()
 		// Bind texture to renderer
 		if (e.first.substr(0, 4) == "rock")
 		  renderer::bind(texs[2], 0);
+		else if (e.first == "well") {
+		  renderer::bind(texs[4], 0);
+		}
 		else
 		  renderer::bind(texs[3], 0);
 
