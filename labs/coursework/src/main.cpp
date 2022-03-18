@@ -7,16 +7,19 @@ using namespace glm;
 
 // Geometry
 geometry geom;
-// Mesh map
+// Mesh maps
 map<string, mesh> meshes;
+map<string, mesh> demo_meshes;
 // Transformation hierarchy
 map<mesh*, mesh*> hierarchy;
 // Cameras
-free_camera cam;
+free_camera cam_f;
+//target_camera cam_t;
+
 // Textures array
 array<texture, 3> texs;
 // Effects array
-array<effect, 3> effs;
+array<effect, 4> effs;
 // Skybox
 mesh skybox;
 cubemap skybox_cubemap;
@@ -178,6 +181,12 @@ bool load_content()
   // Skybox
   skybox = mesh(geometry_builder::create_box());
 
+  // Optional meshes to showcase lighting
+  demo_meshes["teapot"] = mesh(geometry("res/models/teapot.obj"));
+  demo_meshes["plane"] = mesh(geometry_builder::create_plane());
+  demo_meshes["pyramid"] = mesh(geometry_builder::create_pyramid());
+  demo_meshes["sphere"] = mesh(geometry_builder::create_sphere());
+
   //// Transformations
   // Terrain
   meshes["terrain"].get_transform().scale = vec3(2.0f, 2.0f, 2.0f);
@@ -201,6 +210,15 @@ bool load_content()
   meshes["rock_6"].get_transform().position = vec3(50.0f, -43.5f, 20.0f);
   meshes["rock_6"].get_transform().scale = vec3(8.0f, 4.0f, 5.5f);
 
+  demo_meshes["plane"].get_transform().position = vec3(100.0f, 0.0f, 150.0f);
+  demo_meshes["plane"].get_transform().scale = vec3(2.0f, 0.0f, 2.0f);
+  demo_meshes["teapot"].get_transform().position = vec3(100.0f, 0.0f, 150.0f);
+  demo_meshes["teapot"].get_transform().scale = vec3(0.5f, 0.5f, 0.5f);
+  demo_meshes["pyramid"].get_transform().position = vec3(50.0f, 15.0f, 200.0f);
+  demo_meshes["pyramid"].get_transform().scale = vec3(35.0f, 35.0f, 35.0f);
+  demo_meshes["sphere"].get_transform().position = vec3(150.0f, 15.0f, 100.0f);
+  demo_meshes["sphere"].get_transform().scale = vec3(15.0f, 15.0f, 15.0f);
+
   //// Load textures
   texs[0] = texture("res/textures/terrain/mud.jpg");
   texs[1] = texture("res/textures/terrain/grass.jpg");
@@ -220,16 +238,20 @@ bool load_content()
   // Skybox
   effs[2].add_shader("res/shaders/skybox.vert", GL_VERTEX_SHADER);
   effs[2].add_shader("res/shaders/skybox.frag", GL_FRAGMENT_SHADER);
+  // Combined lighting
+  effs[3].add_shader("res/shaders/combined_lighting.vert", GL_VERTEX_SHADER);
+  effs[3].add_shader("res/shaders/combined_lighting.frag", GL_FRAGMENT_SHADER);
 
   // Build effects
-  effs[0].build();
-  effs[1].build();
-  effs[2].build();
+  effs[0].build();	// Terrain
+  effs[1].build();	// Regular
+  effs[2].build();	// Skybox
+  effs[3].build();	// Combined lighting
 
   // Set camera properties
-  cam.set_position(vec3(100.0f, 40.0f, 5.0f));
-  cam.rotate(pi<float>(), -0.2f);
-  cam.set_projection(quarter_pi<float>(), renderer::get_screen_aspect(), 0.1f, 1000.0f);
+  cam_f.set_position(vec3(100.0f, 40.0f, 5.0f));
+  cam_f.rotate(pi<float>(), -0.2f);
+  cam_f.set_projection(quarter_pi<float>(), renderer::get_screen_aspect(), 0.1f, 1000.0f);
   return true;
 }
 
@@ -254,26 +276,26 @@ bool update(float delta_time)
   delta_y = delta_y * ratio_height;
 
   // Rotate cameras by delta
-  cam.rotate(delta_x, -delta_y);
+  cam_f.rotate(delta_x, -delta_y);
 
   // Use keyboard to move the camera - WSAD
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_W))
-	cam.move(vec3(0.0f, 0.0f, 0.3f));
+	  cam_f.move(vec3(0.0f, 0.0f, 0.3f));
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_S))
-	cam.move(vec3(0.0f, 0.0f, -0.3f));
+	  cam_f.move(vec3(0.0f, 0.0f, -0.3f));
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_A))
-	cam.move(vec3(-0.3f, 0.0f, 0.0f));
+	  cam_f.move(vec3(-0.3f, 0.0f, 0.0f));
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_D))
-	cam.move(vec3(0.3f, 0.0f, 0.0f));
+	  cam_f.move(vec3(0.3f, 0.0f, 0.0f));
 
   // Update the camera
-  cam.update(delta_time);
+  cam_f.update(delta_time);
 
   // Update cursor position
   cursor_x = current_x;
   cursor_y = current_y;
 
-  skybox.get_transform().position = cam.get_position();
+  skybox.get_transform().position = cam_f.get_position();
 
   return true;
 }
@@ -290,8 +312,8 @@ void render_skybox()
 
   // Calculate MVP for the skybox
   auto M = skybox.get_transform().get_transform_matrix();
-  auto V = cam.get_view();
-  auto P = cam.get_projection();
+  auto V = cam_f.get_view();
+  auto P = cam_f.get_projection();
   auto MVP = P * V * M;
 
   // Set MVP matrix uniform
@@ -310,64 +332,134 @@ void render_skybox()
   glEnable(GL_CULL_FACE);
 }
 
+void bind_lighting(mesh m, mat4 M)
+{
+  // Bind effect
+  renderer::bind(effs[3]);
+  // Create MVP matrix
+  auto V = cam_f.get_view();
+  auto P = cam_f.get_projection();
+  auto MVP = P * V * M;
+  // Set MVP matrix uniform
+  glUniformMatrix4fv(effs[3].get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
+  // Set M matrix uniform
+  glUniformMatrix4fv(effs[3].get_uniform_location("M"), 1, GL_FALSE, value_ptr(M));
+  // Set N matrix uniform - remember - 3x3 matrix
+  glUniformMatrix3fv(effs[3].get_uniform_location("N"), 1, GL_FALSE, value_ptr(m.get_transform().get_normal_matrix()));
+  // Set ambient intensity - (0.3, 0.3, 0.3, 1.0)
+  glUniform4fv(effs[3].get_uniform_location("ambient_intensity"), 1, value_ptr(vec4(0.3f, 0.3f, 0.3f, 1.0f)));
+  // Set light colour - (1.0, 1.0, 1.0, 1.0)
+  glUniform4fv(effs[3].get_uniform_location("light_colour"), 1, value_ptr(vec4(1, 1, 1, 1)));
+  // Set light direction - (1.0, 1.0, -1.0)
+  glUniform3fv(effs[3].get_uniform_location("light_dir"), 1, value_ptr(vec3(1, 1, -1)));
+  // Set diffuse reflection - all objects red
+  glUniform4fv(effs[3].get_uniform_location("diffuse_reflection"), 1, value_ptr(vec4(1, 0, 0, 1)));
+  // Set specular reflection - white
+  glUniform4fv(effs[3].get_uniform_location("specular_reflection"), 1, value_ptr(vec4(1, 1, 1, 1)));
+  // Set shininess - Use 50.0f
+  glUniform1f(effs[3].get_uniform_location("shininess"), 4.0f);
+  // Set eye position - Get this from active camera
+  glUniform3fv(effs[3].get_uniform_location("eye_pos"), 1, value_ptr(cam_f.get_position()));
+}
+
 bool render()
 {
   // Render skybox
   render_skybox();
 
-  // Render meshes
-  for (auto &e : meshes) {
-	auto m = e.second;
-	
-	// Create MVP matrix
-	mat4 M;
 
-	// If rendering a rock (part of transform hierarchy)
-	if (e.first.substr(0, 4) == "rock")
-	  M = (*hierarchy[&e.second]).get_transform().get_transform_matrix() * m.get_transform().get_transform_matrix();
-	else
-	  M = m.get_transform().get_transform_matrix();
+  if (glfwGetKey(renderer::get_window(), 'R'))
+  {
 
-	auto V = cam.get_view();
-	auto P = cam.get_projection();
-	auto MVP = P * V * M;
+	for (auto &e : demo_meshes) {
+	  auto m = e.second;
 
-	// If rendering the terrain
-	if (e.first == "terrain")
-	{
 	  // Bind effect
-	  renderer::bind(effs[0]);
+	  renderer::bind(effs[3]);
+	  // Create MVP matrix
+	  auto M = m.get_transform().get_transform_matrix();
+	  auto V = cam_f.get_view();
+	  auto P = cam_f.get_projection();
+	  auto MVP = P * V * M;
 	  // Set MVP matrix uniform
-	  glUniformMatrix4fv(effs[0].get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
-
-	  // Bind textures
-	  renderer::bind(texs[0], 0);
-	  renderer::bind(texs[1], 1);
-
-	  // Set the uniform values for textures
-	  static int tex_indices[] = { 0, 1 };
-	  glUniform1iv(effs[0].get_uniform_location("tex"), 2, tex_indices);
-
-	  // Render mesh
-	  renderer::render(m);
-	}
-	// If rendering a regular mesh
-	else
-	{
-	  // Bind effect
-	  renderer::bind(effs[1]);
-	  // Set MVP matrix uniform
-	  glUniformMatrix4fv(effs[1].get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
-
-	  // Bind texture to renderer
-	  renderer::bind(texs[2], 0);
-	  // Set the texture value for the shader here
-	  glUniform1i(effs[1].get_uniform_location("tex"), 0);
+	  glUniformMatrix4fv(effs[3].get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
+	  // Set M matrix uniform
+	  glUniformMatrix4fv(effs[3].get_uniform_location("M"), 1, GL_FALSE, value_ptr(M));
+	  // Set N matrix uniform - remember - 3x3 matrix
+	  glUniformMatrix3fv(effs[3].get_uniform_location("N"), 1, GL_FALSE, value_ptr(m.get_transform().get_normal_matrix()));
+	  // Set ambient intensity - (0.3, 0.3, 0.3, 1.0)
+	  glUniform4fv(effs[3].get_uniform_location("ambient_intensity"), 1, value_ptr(vec4(0.3f, 0.3f, 0.3f, 1.0f)));
+	  // Set light colour - (1.0, 1.0, 1.0, 1.0)
+	  glUniform4fv(effs[3].get_uniform_location("light_colour"), 1, value_ptr(vec4(1, 1, 1, 1)));
+	  // Set light direction - (1.0, 1.0, -1.0)
+	  glUniform3fv(effs[3].get_uniform_location("light_dir"), 1, value_ptr(vec3(1, 1, -1)));
+	  // Set diffuse reflection - all objects red
+	  glUniform4fv(effs[3].get_uniform_location("diffuse_reflection"), 1, value_ptr(vec4(1, 0, 0, 1)));
+	  // Set specular reflection - white
+	  glUniform4fv(effs[3].get_uniform_location("specular_reflection"), 1, value_ptr(vec4(1, 1, 1, 1)));
+	  // Set shininess - Use 50.0f
+	  glUniform1f(effs[3].get_uniform_location("shininess"), 4.0f);
+	  // Set eye position - Get this from active camera
+	  glUniform3fv(effs[3].get_uniform_location("eye_pos"), 1, value_ptr(cam_f.get_position()));
 
 	  // Render mesh
 	  renderer::render(m);
 	}
   }
+  else
+  {
+	// Render meshes
+	for (auto &e : meshes) {
+	  auto m = e.second;
+
+	  // Create MVP matrix
+	  mat4 M;
+	  // If rendering a rock (part of transform hierarchy)
+	  if (e.first.substr(0, 4) == "rock")
+		M = (*hierarchy[&e.second]).get_transform().get_transform_matrix() * m.get_transform().get_transform_matrix();
+	  else
+		M = m.get_transform().get_transform_matrix();
+
+	  auto V = cam_f.get_view();
+	  auto P = cam_f.get_projection();
+	  auto MVP = P * V * M;
+
+	  // If rendering the terrain
+	  if (e.first == "terrain")
+	  {
+		// Bind effect
+		renderer::bind(effs[0]);
+		// Set MVP matrix uniform
+		glUniformMatrix4fv(effs[0].get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
+
+		// Bind textures
+		renderer::bind(texs[0], 0);
+		renderer::bind(texs[1], 1);
+
+		// Set the uniform values for textures
+		static int tex_indices[] = { 0, 1 };
+		glUniform1iv(effs[0].get_uniform_location("tex"), 2, tex_indices);
+	  }
+	  // If rendering a regular mesh
+	  else
+	  {
+		// Bind effect
+		renderer::bind(effs[1]);
+		// Set MVP matrix uniform
+		glUniformMatrix4fv(effs[1].get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
+
+		// Bind texture to renderer
+		renderer::bind(texs[2], 0);
+		// Set the texture value for the shader here
+		glUniform1i(effs[1].get_uniform_location("tex"), 0);
+	  }
+	  // Render mesh
+	  renderer::render(m);
+	}
+  }
+
+
+  
   return true;
 }
 
