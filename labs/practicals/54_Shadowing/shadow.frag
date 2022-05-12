@@ -28,8 +28,7 @@ struct material {
 #endif
 
 // Forward declarations of used functions
-vec4 calculate_spot(in spot_light spot, in material mat, in vec3 position, in vec3 normal, in vec3 view_dir,
-                    in vec4 tex_colour);
+vec4 calculate_spot(in spot_light spot, in material mat, in vec3 position, in vec3 normal, in vec3 view_dir, in vec4 tex_colour);
 float calculate_shadow(in sampler2D shadow_map, in vec4 light_space_pos);
 
 // Spot light being used in the scene
@@ -55,19 +54,20 @@ layout(location = 3) in vec4 light_space_pos;
 // Outgoing colour
 layout(location = 0) out vec4 colour;
 
-void main() {
+void main()
+{
   // *********************************
   // Calculate shade factor
-
+  float shade = calculate_shadow(shadow_map, light_space_pos);
   // Calculate view direction, normalize it
-
+  vec3 view_dir = normalize(eye_pos - position);
   // Sample texture
-
+  vec4 tex_colour = texture(tex, tex_coord);
   // Calculate spot light
-
+  colour += calculate_spot(spot, mat, position, normal, view_dir, tex_colour);
   // Scale colour by shade
-
+  colour *= shade;
   //Ensure alpha is 1.0
-
+  colour.a = 1.0;
   // *********************************
 }
