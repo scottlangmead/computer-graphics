@@ -23,22 +23,22 @@ layout (location = 1) out vec3 map_tex_coord;
 
 void main()
 {
-	// Calculate screen position
-	gl_Position = MVP * vec4(position, 1.0);
-	// ************************
-	// Calculate world position
-	// ************************
-	vec3 transformed_position = (M * vec4(position, 1.0)).xyz;
-	// ********************
-	// Transform the normal
-	// ********************
-	vec3 transformed_normal = N * normal;
-	// ****************************************************************
-	// Calculate map_tex_coord using world position and transformed normal
-	// ****************************************************************
-	map_tex_coord = normalize(reflect(transformed_position - eye_pos, transformed_normal));
-	// *******************************
-	// Pass through texture coordinate
-	// *******************************
-	vertex_tex_coord = tex_coord;
+  // Calculate screen position
+  gl_Position = MVP * vec4(position, 1.0);
+  // ************************
+  // Calculate world position
+  // ************************
+  vec3 transformed_position = (M * vec4(position, 1.0)).xyz;
+  // ********************
+  // Transform the normal
+  // ********************
+  vec3 transformed_normal = N * normal;
+  // ****************************************************************
+  // Calculate map_tex_coord using world position and transformed normal
+  // ****************************************************************
+  map_tex_coord = normalize(reflect(transformed_position - eye_pos, transformed_normal));
+  // *******************************
+  // Pass through texture coordinate
+  // *******************************
+  vertex_tex_coord = tex_coord;
 }

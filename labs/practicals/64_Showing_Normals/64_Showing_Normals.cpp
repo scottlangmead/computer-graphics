@@ -95,8 +95,8 @@ bool load_content() {
 
   // Load in debug effect
   debug_eff.add_shader("64_Showing_Normals/shader.vert", GL_VERTEX_SHADER);
-  debug_eff.add_shader("64_Showing_Normals/shader.frag", GL_FRAGMENT_SHADER);
   debug_eff.add_shader("64_Showing_Normals/normals.geom", GL_GEOMETRY_SHADER);
+  debug_eff.add_shader("64_Showing_Normals/shader.frag", GL_FRAGMENT_SHADER);
   debug_eff.build();
 
   // Set camera properties

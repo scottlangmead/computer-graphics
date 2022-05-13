@@ -37,7 +37,6 @@ bool load_content() {
   light.set_light_colour(vec4(1.0f, 1.0f, 1.0f, 1.0f));
   light.set_direction(normalize(vec3(1.0f, 1.0f, 0.0f)));
 
-
   // Load in shaders
   eff.add_shader("55_Normal_Mapping/shader.vert", GL_VERTEX_SHADER);
   eff.add_shader("55_Normal_Mapping/shader.frag", GL_FRAGMENT_SHADER);
@@ -89,21 +88,21 @@ bool render() {
                      value_ptr(cylinder.get_transform().get_normal_matrix()));
   // *********************************
   // Bind material
-
+  renderer::bind(cylinder.get_material(), "mat");
   // Bind light
-
+  renderer::bind(light, "light");
   // Bind texture
-
+  renderer::bind(tex, 0);
   // Set tex uniform
-
+  glUniform1i(eff.get_uniform_location("tex"), 0);
   // Bind normal_map
-
+  renderer::bind(normal_map, 1);
   // Set normal_map uniform
-
+  glUniform1i(eff.get_uniform_location("normal_map"), 1);
   // Set eye position
-
+  glUniform3fv(eff.get_uniform_location("eye_pos"), 1, value_ptr(cam.get_position()));
   // Render mesh
-
+  renderer::render(cylinder);
   // *********************************
   return true;
 }

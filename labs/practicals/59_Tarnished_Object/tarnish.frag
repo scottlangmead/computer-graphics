@@ -15,16 +15,16 @@ layout (location = 0) out vec4 colour;
 
 void main()
 {
-	// **********************
-	// Sample environment map
-	// **********************
-	vec4 environment_sample = texture(cubemap, env_map_coord);
-	// **********************
-	// Sample tarnish texture
-	// **********************
-	vec4 tex_sample = texture(tex, tex_coord);
-	// ******************************************************
-	// Final colour is product ot environment map and tarnish
-	// ******************************************************
-	colour = environment_sample * tex_sample;
+  // **********************
+  // Sample environment map
+  // **********************
+  vec4 environment_sample = texture(cubemap, env_map_coord);
+  // **********************
+  // Sample tarnish texture
+  // **********************
+  vec4 tex_sample = texture(tex, tex_coord);
+  // ******************************************************
+  // Final colour is product ot environment map and tarnish
+  // ******************************************************
+  colour = environment_sample * tex_sample;
 }

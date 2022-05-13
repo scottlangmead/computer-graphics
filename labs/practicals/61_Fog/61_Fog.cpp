@@ -164,16 +164,16 @@ bool render() {
     glUniform3fv(eff.get_uniform_location("eye_pos"), 1, value_ptr(cam.get_position()));
 
     // *********************************
-    // Set fog colour to the same as the clear colour
-
-    // Set fog start:  5.0f
-
-    // Set fog end:  100.0f
-
-    // Set fog density: 0.04f
-
-    // Set fog type: FOG_EXP2
-
+	// Set fog colour to the same as the clear colour
+	glUniform4fv(eff.get_uniform_location("fog_colour"), 1, value_ptr(vec4(.5f, .5f, .5f, .5f)));
+	// Set fog start:  5.0f
+	glUniform1f(eff.get_uniform_location("fog_start"), 5.0f);
+	// Set fog end:  100.0f
+	glUniform1f(eff.get_uniform_location("fog_end"), 100.0f);
+	// Set fog density: 0.04f
+	glUniform1f(eff.get_uniform_location("fog_density"), 0.04f);
+	// Set fog type: FOG_EXP2
+	glUniform1i(eff.get_uniform_location("fog_type"), FOG_EXP2);
     // *********************************
 
     // Render mesh

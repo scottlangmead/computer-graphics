@@ -16,22 +16,22 @@ void main() {
   for (int i = 0; i < 3; ++i) {
     // *********************************
     // Get vertex pos
-
+    vec3 vertex_pos = (gl_in[i].gl_Position).xyz;
     // Ensure normal is normalized
-
-
+    vec3 n = normal[i];
+    n = normalize(n);
     // Output normal position for start of line
     // - remember to transform
-
+    gl_Position = MVP * vec4(vertex_pos, 1.0);
     // Emit
-
+    EmitVertex();
     // Output position + normal for end of line
     // - remember to transform
-
+    gl_Position = MVP * vec4((vertex_pos + n), 1.0);
     // Emit
-
+    EmitVertex();
     // End the primitive
-
+    EndPrimitive();
     // *********************************
   }
 }

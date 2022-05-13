@@ -16,15 +16,15 @@ bool load_content() {
   //sphere = mesh(geometry_builder::create_box());
   // Scale cylinder
   sphere.get_transform().scale = vec3(5.0f, 5.0f, 5.0f);
-
+  
   // Load in shaders
   eff.add_shader("63_Exploding_Shape/shader.vert", GL_VERTEX_SHADER);
-  eff.add_shader("63_Exploding_Shape/shader.frag", GL_FRAGMENT_SHADER);
   eff.add_shader("63_Exploding_Shape/explode.geom", GL_GEOMETRY_SHADER);
-
+  eff.add_shader("63_Exploding_Shape/shader.frag", GL_FRAGMENT_SHADER);
+  
   // Build effect
   eff.build();
-
+  
   // Set camera properties
   cam.set_position(vec3(0.0f, 2.0f, 50.0f));
   cam.set_target(vec3(0.0f, 0.0f, 0.0f));
@@ -34,31 +34,30 @@ bool load_content() {
 
 bool update(float delta_time) {
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_LEFT)) {
-    sphere.get_transform().rotate(vec3(0.0f, -pi<float>(), 0.0f) * delta_time);
+	sphere.get_transform().rotate(vec3(0.0f, -pi<float>(), 0.0f) * delta_time);
   }
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_RIGHT)) {
-    sphere.get_transform().rotate(vec3(0.0f, pi<float>(), 0.0f) * delta_time);
+	sphere.get_transform().rotate(vec3(0.0f, pi<float>(), 0.0f) * delta_time);
   }
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_UP)) {
-    sphere.get_transform().rotate(vec3(pi<float>(), 0.0f, 0.0f) * delta_time);
+	sphere.get_transform().rotate(vec3(pi<float>(), 0.0f, 0.0f) * delta_time);
   }
   if (glfwGetKey(renderer::get_window(), GLFW_KEY_DOWN)) {
-    sphere.get_transform().rotate(vec3(-pi<float>(), 0.0f, 0.0f) * delta_time);
+	sphere.get_transform().rotate(vec3(-pi<float>(), 0.0f, 0.0f) * delta_time);
   }
   // *********************************
   // Use o and p to modify explode factor =/- 0.1f
-
-
-
-
-
-
+  if (glfwGetKey(renderer::get_window(), 'O')) {
+	explode_factor += 0.1f;
+  }
+  if (glfwGetKey(renderer::get_window(), 'P')) {
+	explode_factor -= 0.1f;
+  }
   // *********************************
   cam.update(delta_time);
 
   return true;
 }
-
 
 bool render() {
   // Bind effect
@@ -72,12 +71,12 @@ bool render() {
   glUniformMatrix4fv(eff.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
   // *********************************
   // Set explode factor uniform
-
+  glUniform1f(eff.get_uniform_location("explode_factor"), explode_factor);
   // *********************************
   // Render mesh
-  //glDisable(GL_CULL_FACE); //turn this on to see cool stuff.
+  //glDisable(GL_CULL_FACE); // Toggle this to see cool stuff
   renderer::render(sphere);
-
+  
   return true;
 }
 

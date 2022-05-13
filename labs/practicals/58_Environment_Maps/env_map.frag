@@ -11,8 +11,8 @@ layout (location = 0) out vec4 colour;
 
 void main()
 {
-	// **************
-	// Sample cubemap
-	// **************
-	colour = texture(cubemap, tex_coord);
+  // **************
+  // Sample cubemap
+  // **************
+  colour = texture(cubemap, tex_coord);
 }

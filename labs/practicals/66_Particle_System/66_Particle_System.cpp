@@ -9,7 +9,8 @@ using namespace graphics_framework;
 const unsigned int MAX_PARTICLES = 3000;
 
 // A particle
-struct particle {
+struct particle
+{
   vec3 position = vec3(0, 0, 0);
   vec3 velocity = vec3(0, 0, 0);
 };
@@ -78,18 +79,18 @@ bool load_content() {
   glGenBuffers(2, particle_buffers_vbo);
   // *********************************
   // Place initial particle data in buffer 1
-
-
-
+  glBindBuffer(GL_ARRAY_BUFFER, particle_buffers_vbo[0]);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(particle) * MAX_PARTICLES, particles, GL_DYNAMIC_DRAW);
+  glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, particle_buffers_vbo[0]);
   // Fill space with blank data in buffer 2
-
-
-
+  glBindBuffer(GL_ARRAY_BUFFER, particle_buffers_vbo[1]);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(particle) * MAX_PARTICLES, particles, GL_DYNAMIC_DRAW);
+  glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, particle_buffers_vbo[1]);
   // generate our feedback objects
-
+  glGenTransformFeedbacks(2, transform_feedbacks);
   // link fb[0] to vbo[1]
-
-
+  glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, transform_feedbacks[0]);
+  glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, particle_buffers_vbo[1]);
   // *********************************
   // link fb[1] to vbo[0]
   glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, transform_feedbacks[1]);
@@ -123,7 +124,7 @@ void render_feeback() {
 
   glBindBuffer(GL_ARRAY_BUFFER, particle_buffers_vbo[front_buf]);
   {
-    // unfortunatly we can't save this stuff in the VAO. Because OGL.
+    // Unfortunatly we can't save this stuff in the VAO. Because OGL.
     GLint position_in_loc = glGetAttribLocation(particle_eff.get_program(), "position_in");
     GLint velocity_in_loc = glGetAttribLocation(particle_eff.get_program(), "velocity_in");
     glEnableVertexAttribArray(position_in_loc);
@@ -137,19 +138,19 @@ void render_feeback() {
   glBeginTransformFeedback(GL_POINTS);
 
   if (first_frame) {
-    // compute our points from teh VBO like normal
+    // Compute our points from teh VBO like normal
     glDrawArrays(GL_POINTS, 0, MAX_PARTICLES);
     first_frame = false;
   } else {
-    // compute from feedback data
+    // Compute from feedback data
     glDrawTransformFeedback(GL_POINTS, transform_feedbacks[back_buf]);
   }
-  // Note: the above doesn't actually render, it saves data into either vbo 0/1.
+  // Note: The above doesn't actually render, it saves data into either vbo 0/1.
 
-  // stop feedback recording.
+  // Stop feedback recording.
   glEndTransformFeedback();
 
-  // reenable output
+  // Re-enable output
   glDisable(GL_RASTERIZER_DISCARD);
 }
 
@@ -180,8 +181,8 @@ bool render() {
 
   // *********************************
   // Swap front and back buffers
-
-
+  front_buf = back_buf;
+  back_buf = (back_buf + 1) % 2;
   // *********************************
   return true;
 }

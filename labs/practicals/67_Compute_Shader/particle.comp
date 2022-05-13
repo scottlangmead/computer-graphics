@@ -18,8 +18,8 @@ void main(void) {
   vec4 pos = positions[index];
 
   // *********************************
-  // Upadte new_pos with velocity and delta_tims
-
+  // Update new_pos with velocity and delta_tims
+  vec4 new_pos = pos + (vel * delta_time);
   // *********************************
 
   // Keep all particles on screen

@@ -1,6 +1,5 @@
 #version 440
 
-
 // Incoming vertex colour
 layout(location = 0) in vec4 in_colour;
 

@@ -29,7 +29,8 @@ layout(location = 3) out vec3 tangent_out;
 // Outgoing binormal
 layout(location = 4) out vec3 binormal_out;
 
-void main() {
+void main()
+{
   // Transform position into screen space
   gl_Position = MVP * vec4(position, 1.0);
   // Transform position into world space
@@ -41,8 +42,8 @@ void main() {
 
   // *********************************
   // Transform tangent
-
+  tangent_out = N * tangent;
   // Transform binormal
-
+  binormal_out = N * binormal;
   // *********************************
 }

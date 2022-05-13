@@ -142,9 +142,9 @@ bool update(float delta_time) {
 bool render() {
   // *********************************
   // Set render target to frame buffer
-
+  renderer::set_render_target(frame);
   // Clear frame
-
+  glClear(GL_DEPTH_BUFFER_BIT);
   // *********************************
 
   // Render meshes
@@ -183,19 +183,22 @@ bool render() {
 
   // *********************************
   // Set render target back to the screen
-
+  renderer::set_render_target();
   // Bind Tex effect
-
+  renderer::bind(tex_eff);
   // MVP is now the identity matrix
-
+  mat4 MVP = mat4(1, 0, 0, 0,
+	  0, 1, 0, 0,
+	  0, 0, 1, 0,
+	  0, 0, 0, 1);
   // Set MVP matrix uniform
-
+  glUniformMatrix4fv(tex_eff.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
   // Bind texture from frame buffer
-
+  renderer::bind(frame.get_frame(), 1);
   // Set the tex uniform
-
+  glUniform1i(tex_eff.get_uniform_location("tex"), 1);
   // Render the screen quad
-
+  renderer::render(screen_quad);
   // *********************************
   return true;
 }

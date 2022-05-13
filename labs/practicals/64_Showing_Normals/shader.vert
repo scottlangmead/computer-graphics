@@ -10,8 +10,8 @@ layout (location = 0)  out vec3 normal_out;
 
 void main()
 {
-	// Pass through position to geometry shader
-	gl_Position = vec4(position, 1.0);
-	// Output normal
-	normal_out = normal;
+  // Pass through position to geometry shader
+  gl_Position = vec4(position, 1.0);
+  // Output normal
+  normal_out = normal;
 }
