@@ -7,4 +7,4 @@ using namespace std;
 using namespace graphics_framework;
 using namespace glm;
 
-void renderMesh(mesh m);
+bool render();

@@ -14,8 +14,8 @@ layout(location = 0) in vec2 tex_coord;
 // Outgoing colour
 layout(location = 0) out vec4 colour;
 
-void main()
-{
+void main() {
+  // *********************************
   // Sample the two textures
   vec4 tex1 = texture(tex, tex_coord);
   vec4 tex2 = texture(previous_frame, tex_coord);
@@ -23,4 +23,5 @@ void main()
   colour = mix(tex1, tex2, blend_factor);
   // Ensure alpha is 1.0
   colour.a = 1.0;
+  // *********************************
 }

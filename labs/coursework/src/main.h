@@ -7,21 +7,19 @@ using namespace std;
 using namespace graphics_framework;
 using namespace glm;
 
-// Meshes
 extern map<string, mesh> meshes;
-// Effects
-extern effect eff, blur, depthOfField;
-// Textures
+extern map<string, effect> effects;
 extern texture tex;
-
-
-extern directional_light light;
 extern frame_buffer frames[2];
-extern frame_buffer first_pass;
+extern frame_buffer temp_frame;
+extern unsigned int current_frame;
 extern geometry screen_quad;
 extern free_camera cam;
-extern frame_buffer frame;
-
-
-// Cursor position
+extern point_light point;
+extern shadow_map shadow;
 extern double cursor_x, cursor_y;
+extern float range;
+extern float MAX_RANGE;
+extern float MIN_RANGE;
+extern float BLUR_FACTOR;
+extern vec4 LIGHT_COLOUR;

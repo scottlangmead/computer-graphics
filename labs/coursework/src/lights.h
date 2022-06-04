@@ -8,3 +8,4 @@ using namespace graphics_framework;
 using namespace glm;
 
 void loadLights();
+void campfireFlicker();
